@@ -1,0 +1,54 @@
+name: Add separate poster bottom message fields
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  update:
+    if: ${{ !contains(github.event.head_commit.message, 'Add separate poster bottom message fields') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update poster controls and rendering
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          anchor='행사 설명'
+          pos=s.find(anchor)
+          if pos<0: raise SystemExit('event description label not found')
+          # Insert two dedicated inputs immediately after the existing event description field area.
+          marker='</textarea>'
+          end=s.find(marker,pos)
+          if end<0: raise SystemExit('description textarea not found')
+          end+=len(marker)
+          fields='''\n<div class="field"><label>하단 문구 ①</label><input id="bottomMsg1" placeholder="☆ 아랫장야시장에서 만나요! ♪"></div>\n<div class="field"><label>하단 문구 ②</label><input id="bottomMsg2" placeholder="많은 관심과 참여 부탁드립니다!"></div>'''
+          if 'id="bottomMsg1"' not in s:
+              s=s[:end]+fields+s[end:]
+          # Make the two messages data-driven in the poster preview.
+          if 'id="posterFooter"' not in s:
+              s=s.replace('<div class="posterFooter">','<div class="posterFooter" id="posterFooter">',1)
+          if 'id="infoMessage"' not in s:
+              s=s.replace('<div class="infoMessage">','<div class="infoMessage" id="infoMessage">',1)
+          # Add listeners and a small render helper before the final script close.
+          js='''\nfunction renderBottomMessages(){const a=(document.getElementById('bottomMsg1')||{}).value||'';const b=(document.getElementById('bottomMsg2')||{}).value||'';const f=document.getElementById('posterFooter');const m=document.getElementById('infoMessage');if(f)f.innerHTML=a?'<span class="star">☆</span>'+escapeHtml(a)+'<span class="music">♪</span>':'';if(m)m.innerHTML=b?escapeHtml(b):'';}\n['bottomMsg1','bottomMsg2'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',renderBottomMessages)});renderBottomMessages();\n'''
+          idx=s.rfind('</script>')
+          if idx<0: raise SystemExit('script close not found')
+          if 'function renderBottomMessages' not in s:
+              s=s[:idx]+js+s[idx:]
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Add separate poster bottom message fields'
+          git push
+      - name: Remove temporary workflow
+        run: |
+          git rm .github/workflows/add-description-fields.yml
+          git commit -m 'Remove temporary description fields workflow'
+          git push
