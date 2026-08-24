@@ -11,7 +11,7 @@ body{margin:0;background:#05080e;color:#fff;font-family:Arial,"Noto Sans KR",san
 .side{width:450px;padding:18px;background:#101b2b;overflow:auto}
 .side h2{margin:0 0 7px}.hint{font-size:11px;color:#aab5c5;line-height:1.55}
 .section{margin-top:16px;padding-top:14px;border-top:1px solid #30415b}.section h3{margin:0 0 10px;font-size:15px;color:#ffd21c}
-.form{display:grid;gap:8px}.form input,.form select{width:100%;padding:10px;border:1px solid #3c4c65;border-radius:6px;background:#0a1424;color:#fff;font-size:12px}.form textarea{min-height:55px;resize:vertical}
+.form{display:grid;gap:8px}.form input,.form select{width:100%;padding:10px;border:1px solid #3c4c65;border-radius:6px;background:#0a1424;color:#fff;font-size:12px}.form textarea{min-height:55px;resize:vertical}.form input[type=date]{color-scheme:dark}
 .fieldLabel{display:block;color:#ffd21c;font-size:12px;font-weight:900;margin-top:2px;margin-bottom:-2px}.dateFields{display:grid;grid-template-columns:1.45fr 1fr;gap:8px}
 .cats{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.cat{border:1px solid #40506a;background:#172235;color:#dce5f2;border-radius:20px;padding:7px 10px;font-size:11px;cursor:pointer}.cat.active{background:#ffd21c;color:#111;border-color:#ffd21c;font-weight:900}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{border:2px solid #34445c;border-radius:8px;overflow:hidden;cursor:pointer;background:#172235}.card.active{border-color:#ffd21c;box-shadow:0 0 0 1px #ffd21c}.card img{width:100%;height:110px;object-fit:cover;display:block}.card b{display:block;padding:8px;text-align:center;font-size:11px}
@@ -39,7 +39,7 @@ body{margin:0;background:#05080e;color:#fff;font-family:Arial,"Noto Sans KR",san
 <input id="headline" placeholder="상단 문구" value="순천의 밤을 빛내는 특별한 무대!">
 <input id="title" placeholder="행사 제목" value="아랫장 야시장">
 <input id="highlight" placeholder="강조 문구" value="특별공연">
-<label class="fieldLabel">일 시</label><div class="dateFields"><input id="date" placeholder="날짜" value="2026. 08. 28(금) 19:00"><input id="time" placeholder="시간" value="오후 7시 ~ 10시"></div>
+<label class="fieldLabel">일 시</label><div class="dateFields"><input id="date" type="date" value="2026-08-28"><input id="time" placeholder="시간" value="오후 7시 ~ 10시"></div>
 <label class="fieldLabel">장 소</label><input id="venue" placeholder="장소" value="순천 아랫장 야시장 특별무대">
 <label class="fieldLabel">주 최</label><select id="host"><option value="">주최 없음</option><option value="가수인생활 엔터테인먼트">가수인생활 엔터테인먼트</option><option value="직접 입력">직접 입력</option></select>
 <input id="hostCustom" placeholder="주최 직접 입력" style="display:none">
@@ -80,12 +80,13 @@ const C=[['all','전체'],['night','🌙 야시장'],['concert','🎤 공연'],[
 let category='all',sel=null,performers=[];
 const $=id=>document.getElementById(id),grid=$('grid'),cats=$('cats'),bg=$('bg');
 function selectedValue(id,customId){const v=$(id).value;return v==='직접 입력'?$(customId).value:v}
-function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function escapeHtml(s){return s.replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function formatInvite(s){if(!s)return '';const e=escapeHtml(s);return s==='많은 관심과 참여 부탁드립니다!'?'많은 관심과<br><span class="accent">참여</span> 부탁드립니다!':e.replace(/참여/g,'<span class="accent">참여</span>')}
+function formatDate(v){if(!v)return '';const p=v.split('-');if(p.length!==3)return v;const d=new Date(v+'T00:00:00');const days=['일','월','화','수','목','금','토'];return p[0]+'. '+p[1]+'. '+p[2]+'('+days[d.getDay()]+')'}
 function updateText(){
 $('pHeadline').textContent=$('headline').value;$('pTitle').textContent=$('title').value;$('pHighlight').textContent=$('highlight').value;$('pVenue').textContent=$('venue').value;
 const h=selectedValue('host','hostCustom'),o=selectedValue('organizer','organizerCustom');
-const rows=[]; rows.push('<div class="infoRow"><span class="infoIcon">📅</span><span class="infoLabel">일 시</span><span class="infoValue">'+escapeHtml($('date').value)+( $('time').value ? ' · '+escapeHtml($('time').value) : '' )+'</span></div>'); rows.push('<div class="infoRow"><span class="infoIcon">📍</span><span class="infoLabel">장 소</span><span class="infoValue">'+escapeHtml($('venue').value)+'</span></div>'); if(h) rows.push('<div class="infoRow"><span class="infoIcon">👥</span><span class="infoLabel">주 최</span><span class="infoValue">'+escapeHtml(h)+'</span></div>'); if(o) rows.push('<div class="infoRow"><span class="infoIcon">📣</span><span class="infoLabel">주 관</span><span class="infoValue">'+escapeHtml(o)+'</span></div>'); $('pInfo').innerHTML=rows.join('');
+const rows=[]; rows.push('<div class="infoRow"><span class="infoIcon">📅</span><span class="infoLabel">일 시</span><span class="infoValue">'+escapeHtml(formatDate($('date').value))+( $('time').value ? ' · '+escapeHtml($('time').value) : '' )+'</span></div>'); rows.push('<div class="infoRow"><span class="infoIcon">📍</span><span class="infoLabel">장 소</span><span class="infoValue">'+escapeHtml($('venue').value)+'</span></div>'); if(h) rows.push('<div class="infoRow"><span class="infoIcon">👥</span><span class="infoLabel">주 최</span><span class="infoValue">'+escapeHtml(h)+'</span></div>'); if(o) rows.push('<div class="infoRow"><span class="infoIcon">📣</span><span class="infoLabel">주 관</span><span class="infoValue">'+escapeHtml(o)+'</span></div>'); $('pInfo').innerHTML=rows.join('');
 $('posterFooter').innerHTML=$('bottomMsg1').value?'<span class="star">☆</span>'+escapeHtml($('bottomMsg1').value)+'<span class="music">♪</span>':'';
 $('infoInvite').innerHTML=formatInvite($('bottomMsg2').value);
 }
