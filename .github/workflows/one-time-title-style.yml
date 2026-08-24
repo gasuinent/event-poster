@@ -1,0 +1,43 @@
+name: One-time title style patch
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch-title-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch only title CSS
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '''.txt{position:absolute;z-index:3;left:20px;right:20px;text-align:center;text-shadow:2px 3px 5px #000}.t1{top:25px;color:#ffe27b;font-size:15px}.t2{top:80px;font-size:48px;font-weight:900}.t3{top:145px;color:#ffd21c;font-size:55px;font-weight:900}.place{top:215px;font-size:19px;font-weight:700}'''
+          new = '''@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Gugi&display=swap');
+.txt{position:absolute;z-index:3;left:20px;right:20px;text-align:center;text-shadow:3px 4px 5px rgba(0,0,0,.9)}
+.t1{top:25px;color:#ffe27b;font-size:15px}
+.t2{top:72px;font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:64px;font-weight:400;letter-spacing:1px;color:#fff;line-height:1.05;-webkit-text-stroke:1px rgba(0,0,0,.35)}
+.t3{top:138px;font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:72px;font-weight:400;letter-spacing:2px;color:#ffd21c;line-height:1.02;-webkit-text-stroke:1px rgba(0,0,0,.35)}
+.place{top:215px;font-size:19px;font-weight:700}'''
+          if old not in s:
+              raise SystemExit('target CSS block not found; no change made')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit patched index only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git commit -m 'style: improve main poster title typography'
+          git push
