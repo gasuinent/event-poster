@@ -13,32 +13,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch only poster preview and download controls
+      - name: Add only poster preview and PNG download controls
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          style_anchor = '.apply{width:100%;margin-top:12px;padding:14px;border:0;border-radius:7px;background:#1877d8;color:#fff;font-weight:900;cursor:pointer}.status{margin-top:8px;color:#ffd21c;font-size:12px}'
-          style_new = style_anchor + '''\n.posterActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.previewBtn,.downloadBtn{padding:12px;border:1px solid #ffd21c;border-radius:7px;font-weight:900;cursor:pointer}.previewBtn{background:#243f82;color:#fff}.downloadBtn{background:#ffd21c;color:#111}.previewBtn:hover,.downloadBtn:hover,.apply:hover{filter:brightness(1.08)}'''
+
+          css = '''\n.posterActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.previewBtn,.downloadBtn{padding:12px;border:1px solid #ffd21c;border-radius:7px;font-weight:900;cursor:pointer;font-size:12px}.previewBtn{background:#243f82;color:#fff}.downloadBtn{background:#ffd21c;color:#111}.previewBtn:hover,.downloadBtn:hover{filter:brightness(1.08)}'''
           if '.posterActions{' not in s:
-              if style_anchor not in s: raise SystemExit('style anchor not found')
-              s=s.replace(style_anchor,style_new,1)
-          html_anchor='<button class="apply" id="applyBtn">⬇ 선택한 디자인 포스터에 적용</button><div class="status" id="status">현재 선택: 없음</div>'
-          html_new='''<button class="apply" id="applyBtn">⬇ 선택한 디자인 포스터에 적용</button><div class="posterActions"><button class="previewBtn" id="previewBtn" type="button">👁 적용 미리보기</button><button class="downloadBtn" id="downloadBtn" type="button">⬇ 포스터 다운로드</button></div><div class="status" id="status">현재 선택: 없음</div>'''
+              marker = '</style>'
+              s = s.replace(marker, css + '\n' + marker, 1)
+
+          controls = '''<div class="posterActions"><button class="previewBtn" id="previewBtn" type="button">👁 적용 미리보기</button><button class="downloadBtn" id="downloadBtn" type="button">⬇ 포스터 다운로드(PNG)</button></div>'''
           if 'id="downloadBtn"' not in s:
-              if html_anchor not in s: raise SystemExit('HTML anchor not found')
-              s=s.replace(html_anchor,html_new,1)
+              anchor = '<button class="apply" id="applyBtn">⬇ 선택한 디자인 포스터에 적용</button>'
+              if anchor in s:
+                  s = s.replace(anchor, anchor + controls, 1)
+              else:
+                  raise SystemExit('apply button anchor not found')
+
           if 'html2canvas' not in s:
-              s=s.replace('<script>','<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>\n<script>',1)
-          js_anchor="$('addBtn').onclick=addPerformer;$('applyBtn').onclick=apply;"
-          js_new='''$('addBtn').onclick=addPerformer;$('applyBtn').onclick=apply;
-$('previewBtn').onclick=()=>{apply();const p=document.querySelector('.poster');if(p)p.scrollIntoView({behavior:'smooth',block:'center'});};
-$('downloadBtn').onclick=async()=>{const p=document.querySelector('.poster');if(!p)return;const btn=$('downloadBtn');const old=btn.textContent;btn.textContent='⏳ 다운로드 준비 중...';btn.disabled=true;try{if(typeof html2canvas!=='function')throw new Error('html2canvas unavailable');const canvas=await html2canvas(p,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});const a=document.createElement('a');a.download='행사포스터.png';a.href=canvas.toDataURL('image/png');a.click();}catch(e){alert('포스터 다운로드 중 문제가 발생했습니다.');console.error(e);}finally{btn.textContent=old;btn.disabled=false;}};'''
-          if 'id="downloadBtn"' in s and "$('previewBtn').onclick" not in s:
-              if js_anchor not in s: raise SystemExit('JS anchor not found')
-              s=s.replace(js_anchor,js_new,1)
+              s = s.replace('<script>', '<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>\n<script>', 1)
+
+          if "window.__posterControlsAdded" not in s:
+              extra = r'''\n<script>\nwindow.__posterControlsAdded=true;\nwindow.addEventListener('DOMContentLoaded',()=>{\n  const preview=document.getElementById('previewBtn');\n  const download=document.getElementById('downloadBtn');\n  const apply=document.getElementById('applyBtn');\n  if(preview) preview.onclick=()=>{if(apply)apply.click();const p=document.querySelector('.poster');if(p)p.scrollIntoView({behavior:'smooth',block:'center'});};\n  if(download) download.onclick=async()=>{\n    const p=document.querySelector('.poster'); if(!p)return;\n    const old=download.textContent; download.textContent='⏳ 다운로드 준비 중...'; download.disabled=true;\n    try{\n      if(typeof html2canvas!=='function')throw new Error('html2canvas unavailable');\n      const canvas=await html2canvas(p,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});\n      const a=document.createElement('a'); a.download='행사포스터.png'; a.href=canvas.toDataURL('image/png'); a.click();\n    }catch(e){alert('포스터 다운로드 중 문제가 발생했습니다.');console.error(e);}\n    finally{download.textContent=old;download.disabled=false;}\n  };\n});\n</script>\n'''
+              s = s.replace('</body>', extra + '</body>', 1)
+
           p.write_text(s,encoding='utf-8')
           PY
       - name: Commit only index.html
@@ -47,5 +49,5 @@ $('downloadBtn').onclick=async()=>{const p=document.querySelector('.poster');if(
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'feat: add poster preview and download buttons'
+          git commit -m 'feat: add poster preview and PNG download controls'
           git push
