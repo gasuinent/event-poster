@@ -112,6 +112,9 @@ $('addBtn').onclick=addPerformer;$('applyBtn').onclick=apply;
 $('host').onchange=()=>toggleCustom('host','hostCustom');$('organizer').onchange=()=>toggleCustom('organizer','organizerCustom');$('hostCustom').oninput=updateText;$('organizerCustom').oninput=updateText;
 $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').value='많은 관심과 참여 부탁드립니다!';
 renderCats();render();updateText();addPerformer();
+
+function renderBottomMessages(){const a=(document.getElementById('bottomMsg1')||{}).value||'';const b=(document.getElementById('bottomMsg2')||{}).value||'';const f=document.getElementById('posterFooter');const m=document.getElementById('infoMessage');if(f)f.innerHTML=a?'<span class="star">☆</span>'+escapeHtml(a)+'<span class="music">♪</span>':'';if(m)m.innerHTML=b?escapeHtml(b):'';}
+['bottomMsg1','bottomMsg2'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',renderBottomMessages)});renderBottomMessages();
 </script>
 </body>
 </html>
