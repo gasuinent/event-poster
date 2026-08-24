@@ -39,7 +39,7 @@ body{margin:0;background:#05080e;color:#fff;font-family:Arial,"Noto Sans KR",san
 <input id="headline" placeholder="상단 문구" value="순천의 밤을 빛내는 특별한 무대!">
 <input id="title" placeholder="행사 제목" value="아랫장 야시장">
 <input id="highlight" placeholder="강조 문구" value="특별공연">
-<label class="fieldLabel">일 시</label><div class="dateFields"><input id="date" type="date" value="2026-08-28"><input id="time" placeholder="시간" value="오후 7시 ~ 10시"></div>
+<label class="fieldLabel">일 시</label><div class="dateFields"><input id="date" type="date" value="2026-08-28"><input id="time" placeholder="시간" value="18:00~~22:00"></div>
 <label class="fieldLabel">장 소</label><input id="venue" placeholder="장소" value="순천 아랫장 야시장 특별무대">
 <label class="fieldLabel">주 최</label><select id="host"><option value="">주최 없음</option><option value="가수인생활 엔터테인먼트">가수인생활 엔터테인먼트</option><option value="직접 입력">직접 입력</option></select>
 <input id="hostCustom" placeholder="주최 직접 입력" style="display:none">
@@ -83,10 +83,11 @@ function selectedValue(id,customId){const v=$(id).value;return v==='직접 입�
 function escapeHtml(s){return s.replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function formatInvite(s){if(!s)return '';const e=escapeHtml(s);return s==='많은 관심과 참여 부탁드립니다!'?'많은 관심과<br><span class="accent">참여</span> 부탁드립니다!':e.replace(/참여/g,'<span class="accent">참여</span>')}
 function formatDate(v){if(!v)return '';const p=v.split('-');if(p.length!==3)return v;const d=new Date(v+'T00:00:00');const days=['일','월','화','수','목','금','토'];return p[0]+'. '+p[1]+'. '+p[2]+'('+days[d.getDay()]+')'}
+function normalizeTime(v){if(!v)return '';let s=v.trim().replace(/[~～〜]+/g,'~~').replace(/\s+/g,'');return s.replace(/(^|~~)(\d{3,4})(?=~~|$)/g,(m,pre,n)=>{n=n.padStart(4,'0');return pre+n.slice(0,2)+':'+n.slice(2)}).replace(/(^|~~)(\d{1,2}):?(\d{2})(?=~~|$)/g,(m,pre,h,mm)=>pre+h.padStart(2,'0')+':'+mm)}
 function updateText(){
 $('pHeadline').textContent=$('headline').value;$('pTitle').textContent=$('title').value;$('pHighlight').textContent=$('highlight').value;$('pVenue').textContent=$('venue').value;
 const h=selectedValue('host','hostCustom'),o=selectedValue('organizer','organizerCustom');
-const rows=[]; rows.push('<div class="infoRow"><span class="infoIcon">📅</span><span class="infoLabel">일 시</span><span class="infoValue">'+escapeHtml(formatDate($('date').value))+( $('time').value ? ' · '+escapeHtml($('time').value) : '' )+'</span></div>'); rows.push('<div class="infoRow"><span class="infoIcon">📍</span><span class="infoLabel">장 소</span><span class="infoValue">'+escapeHtml($('venue').value)+'</span></div>'); if(h) rows.push('<div class="infoRow"><span class="infoIcon">👥</span><span class="infoLabel">주 최</span><span class="infoValue">'+escapeHtml(h)+'</span></div>'); if(o) rows.push('<div class="infoRow"><span class="infoIcon">📣</span><span class="infoLabel">주 관</span><span class="infoValue">'+escapeHtml(o)+'</span></div>'); $('pInfo').innerHTML=rows.join('');
+const rows=[]; rows.push('<div class="infoRow"><span class="infoIcon">📅</span><span class="infoLabel">일 시</span><span class="infoValue">'+escapeHtml(formatDate($('date').value))+( $('time').value ? ' · '+escapeHtml(normalizeTime($('time').value)) : '' )+'</span></div>'); rows.push('<div class="infoRow"><span class="infoIcon">📍</span><span class="infoLabel">장 소</span><span class="infoValue">'+escapeHtml($('venue').value)+'</span></div>'); if(h) rows.push('<div class="infoRow"><span class="infoIcon">👥</span><span class="infoLabel">주 최</span><span class="infoValue">'+escapeHtml(h)+'</span></div>'); if(o) rows.push('<div class="infoRow"><span class="infoIcon">📣</span><span class="infoLabel">주 관</span><span class="infoValue">'+escapeHtml(o)+'</span></div>'); $('pInfo').innerHTML=rows.join('');
 $('posterFooter').innerHTML=$('bottomMsg1').value?'<span class="star">☆</span>'+escapeHtml($('bottomMsg1').value)+'<span class="music">♪</span>':'';
 $('infoInvite').innerHTML=formatInvite($('bottomMsg2').value);
 }
@@ -108,7 +109,8 @@ performers.filter(p=>!p.main).forEach(p=>{const c=document.createElement('div');
 const main=performers.find(p=>p.main);const ma=$('mainArtist');if(main){ma.style.display='block';$('mainImg').src=main.src||'';$('mainLabel').textContent=main.text||'메인가수'}else ma.style.display='none';
 }
 $('addBtn').onclick=addPerformer;$('applyBtn').onclick=apply;
-['headline','title','highlight','venue','date','time','bottomMsg1','bottomMsg2'].forEach(id=>$(id).addEventListener('input',updateText));
+['headline','title','highlight','venue','date','bottomMsg1','bottomMsg2'].forEach(id=>$(id).addEventListener('input',updateText));
+$('time').addEventListener('input',e=>{const v=normalizeTime(e.target.value);e.target.value=v;updateText()});
 $('host').onchange=()=>toggleCustom('host','hostCustom');$('organizer').onchange=()=>toggleCustom('organizer','organizerCustom');$('hostCustom').oninput=updateText;$('organizerCustom').oninput=updateText;
 $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').value='많은 관심과 참여 부탁드립니다!';
 renderCats();render();updateText();addPerformer();
