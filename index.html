@@ -152,5 +152,48 @@ $('host').onchange=()=>toggleCustom('host','hostCustom');$('organizer').onchange
 $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').value='많은 관심과 참여 부탁드립니다!';
 renderCats();render();updateText();addPerformer();
 </script>
-\n<script>\nwindow.__posterControlsAdded=true;\nwindow.addEventListener('DOMContentLoaded',()=>{\n  const preview=document.getElementById('previewBtn');\n  const download=document.getElementById('downloadBtn');\n  const apply=document.getElementById('applyBtn');\n  if(preview) preview.onclick=()=>{if(apply)apply.click();const p=document.querySelector('.poster');if(p)p.scrollIntoView({behavior:'smooth',block:'center'});};\n  if(download) download.onclick=async()=>{\n    const p=document.querySelector('.poster'); if(!p)return;\n    const old=download.textContent; download.textContent='⏳ 다운로드 준비 중...'; download.disabled=true;\n    try{\n      if(typeof html2canvas!=='function')throw new Error('html2canvas unavailable');\n      const canvas=await html2canvas(p,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});\n      const a=document.createElement('a'); a.download='행사포스터.png'; a.href=canvas.toDataURL('image/png'); a.click();\n    }catch(e){alert('포스터 다운로드 중 문제가 발생했습니다.');console.error(e);}\n    finally{download.textContent=old;download.disabled=false;}\n  };\n});\n</script>\n</body>
+\n<script>
+(function(){
+  function bindPosterControls(){
+    const preview=document.getElementById('previewBtn');
+    const download=document.getElementById('downloadBtn');
+    const apply=document.getElementById('applyBtn');
+    if(preview){
+      preview.onclick=function(){
+        if(apply) apply.click();
+        const poster=document.querySelector('.poster');
+        if(poster) poster.scrollIntoView({behavior:'smooth',block:'center'});
+      };
+    }
+    if(download){
+      download.onclick=async function(){
+        const poster=document.querySelector('.poster');
+        if(!poster) return;
+        const old=download.textContent;
+        download.textContent='⏳ 다운로드 준비 중...';
+        download.disabled=true;
+        try{
+          if(typeof window.html2canvas!=='function') throw new Error('html2canvas unavailable');
+          const canvas=await window.html2canvas(poster,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});
+          const link=document.createElement('a');
+          link.download='행사포스터.png';
+          link.href=canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }catch(err){
+          console.error(err);
+          alert('포스터 PNG 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        }finally{
+          download.textContent=old;
+          download.disabled=false;
+        }
+      };
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindPosterControls);
+  else bindPosterControls();
+})();
+</script>
+</body>
 </html>
