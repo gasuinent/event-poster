@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>행사 포스터 · 관리자</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Gugi&display=swap');
 *{box-sizing:border-box}
 body{margin:0;background:#05080e;color:#fff;font-family:Arial,"Noto Sans KR",sans-serif}
 .wrap{display:flex;min-height:100vh}
@@ -19,7 +20,7 @@ body{margin:0;background:#05080e;color:#fff;font-family:Arial,"Noto Sans KR",san
 .add{width:100%;padding:11px;border:1px solid #ffd21c;border-radius:7px;background:#18243a;color:#ffd21c;font-weight:900;cursor:pointer;margin-bottom:10px}
 .performer{padding:10px;border:1px solid #33445f;border-radius:8px;background:#0c1627;margin-bottom:8px}.performerTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:11px;color:#dfe7f2}.remove{border:0;background:#7d1f2a;color:#fff;border-radius:5px;padding:5px 8px;cursor:pointer}.performer input[type=text]{margin-bottom:6px}.performer input[type=file]{font-size:10px}.mainpick{font-size:10px;color:#ffd21c;display:flex;align-items:center;gap:5px;margin-top:7px}.thumb{width:55px;height:55px;object-fit:cover;border-radius:5px;border:1px solid #555;margin-top:6px;display:none}
 .view{flex:1;display:flex;justify-content:center;padding:20px;background:#03060b}.poster{width:540px;height:960px;position:relative;overflow:hidden;background:#08152e;box-shadow:0 0 30px #000}.poster img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,5,20,.12),rgba(0,5,20,.12) 45%,rgba(0,5,20,.72));z-index:2}
-.txt{position:absolute;z-index:3;left:20px;right:20px;text-align:center;text-shadow:2px 3px 5px #000}.t1{top:25px;color:#ffe27b;font-size:15px}.t2{top:80px;font-size:48px;font-weight:900}.t3{top:145px;color:#ffd21c;font-size:55px;font-weight:900}.place{top:215px;font-size:19px;font-weight:700}
+.txt{position:absolute;z-index:3;left:20px;right:20px;text-align:center;text-shadow:3px 4px 5px rgba(0,0,0,.9)}.t1{top:25px;color:#ffe27b;font-size:15px}.t2{top:72px;font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:64px;font-weight:400;letter-spacing:1px;color:#fff;line-height:1.05;-webkit-text-stroke:1px rgba(0,0,0,.35)}.t3{top:138px;font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:72px;font-weight:400;letter-spacing:2px;color:#ffd21c;line-height:1.02;-webkit-text-stroke:1px rgba(0,0,0,.35)}.place{top:215px;font-size:19px;font-weight:700}
 .performersTitle{position:absolute;z-index:4;left:40px;right:40px;top:455px;height:42px;background:#1f397d;border:1px solid #ffd21c;text-align:center;padding:10px;font-size:17px;font-weight:900}
 .artistArea{position:absolute;z-index:5;left:18px;right:18px;top:510px;bottom:190px;overflow:hidden}
 .artistGrid{position:absolute;left:0;right:0;top:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:108px;gap:6px;align-content:start}
