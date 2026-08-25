@@ -1,0 +1,34 @@
+name: Finalize performer layout fix
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize performer fix block
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '<!-- FINAL-PERFORMER-8COL-FIX -->'
+          a = s.find(marker)
+          if a < 0:
+              raise SystemExit('marker not found')
+          b = s.find('</body>', a)
+          block = s[a:b]
+          block = block.replace('\\n', '\n')
+          s = s[:a] + block + s[b:]
+          p.write_text(s, encoding='utf-8')
+      - name: Commit and remove workflow
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Finalize performer 8-column layout' || exit 0
+          git push
