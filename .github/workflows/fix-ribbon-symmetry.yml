@@ -1,4 +1,4 @@
-name: Fix ribbon symmetry
+name: Add event background designs
 on:
   push:
     branches: [main]
@@ -6,26 +6,34 @@ permissions:
   contents: write
 jobs:
   fix:
-    if: ${{ !contains(github.event.head_commit.message, '리본 꼬리 방향 수정 완료') }}
+    if: ${{ !contains(github.event.head_commit.message, '행사별 배경 디자인 기능 완료') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Reverse ribbon tail direction
+      - name: Add event background design selector
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('standalone/poster_format23_admin_v5.html')
           s=p.read_text(encoding='utf-8')
-          old='.ribbon:before{left:-61px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,25% 50%)}.ribbon:after{right:-61px;clip-path:polygon(0 0,100% 0,75% 50%,100% 100%,0 100%)}'
-          new='.ribbon:before{left:-61px;transform:rotate(180deg);clip-path:polygon(0 0,100% 0,100% 100%,0 100%,25% 50%)}.ribbon:after{right:-61px;transform:rotate(180deg);clip-path:polygon(0 0,100% 0,75% 50%,100% 100%,0 100%)}'
-          if old not in s:
-              raise SystemExit('현재 리본 CSS를 찾지 못했습니다.')
-          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          css='''.bgDesignBox{padding:10px;border:1px solid #33445f;border-radius:8px;background:#0b1627;margin-top:7px}.bgDesignGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.bgDesign{padding:8px 4px;border:1px solid #40516a;border-radius:7px;color:#fff;font-size:10px;font-weight:900;cursor:pointer;background:#17243a}.bgDesign.active{border-color:#ffd21c;box-shadow:0 0 0 2px rgba(255,210,28,.25)}.bgDesign.market{background:linear-gradient(135deg,#182b42,#6d321f)}.bgDesign.stage{background:linear-gradient(135deg,#11152d,#5b173b)}.bgDesign.night{background:linear-gradient(135deg,#020b1d,#182d58)}.bgDesign.lights{background:linear-gradient(135deg,#241506,#8a4f08)}.bgDesign.festival{background:linear-gradient(135deg,#32101a,#0d3650)}.bgDesign.clean{background:linear-gradient(135deg,#16202b,#31485d)}'''
+          anchor='.hidden{display:none!important}'
+          if '.bgDesignBox{' not in s:
+              s=s.replace(anchor,css+anchor,1)
+          old='<label class="label">배경 이미지</label><input id="bgFile" type="file" accept="image/*">'
+          new='''<label class="label">배경 사진</label><input id="bgFile" type="file" accept="image/*"><div class="bgDesignBox"><label class="label">행사별 배경 디자인</label><div class="hint">시장·공연·야간·전구·축제 분위기를 선택하거나 직접 배경 사진을 넣습니다.</div><div class="bgDesignGrid"><button type="button" class="bgDesign market active" data-bg="market">시장거리</button><button type="button" class="bgDesign stage" data-bg="stage">공연무대</button><button type="button" class="bgDesign night" data-bg="night">밤하늘</button><button type="button" class="bgDesign lights" data-bg="lights">전구조명</button><button type="button" class="bgDesign festival" data-bg="festival">축제장</button><button type="button" class="bgDesign clean" data-bg="clean">깔끔행사</button></div></div>'''
+          if old not in s: raise SystemExit('배경 입력 부분을 찾지 못했습니다.')
+          s=s.replace(old,new,1)
+          js='''const bgDesigns={market:'linear-gradient(135deg,#182b42 0%,#6d321f 48%,#101923 100%)',stage:'linear-gradient(135deg,#11152d 0%,#5b173b 52%,#090b18 100%)',night:'linear-gradient(180deg,#020b1d 0%,#182d58 55%,#050a12 100%)',lights:'linear-gradient(135deg,#241506 0%,#8a4f08 48%,#171006 100%)',festival:'linear-gradient(135deg,#32101a 0%,#0d3650 55%,#090d18 100%)',clean:'linear-gradient(135deg,#16202b 0%,#31485d 55%,#0c131c 100%')};function applyBgDesign(k){$('poster').style.background=bgDesigns[k]||bgDesigns.market;$('bg').style.display='none';document.querySelectorAll('.bgDesign').forEach(b=>b.classList.toggle('active',b.dataset.bg===k))}document.querySelectorAll('.bgDesign').forEach(b=>b.onclick=()=>applyBgDesign(b.dataset.bg));$('bgFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('bg').src=r.result;$('bg').style.display='block';document.querySelectorAll('.bgDesign').forEach(b=>b.classList.remove('active'))};r.readAsDataURL(f)});applyBgDesign('market');'''
+          marker="$('bgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('bg').src=r.result};r.readAsDataURL(f)};"
+          if marker not in s: raise SystemExit('배경 JS 부분을 찾지 못했습니다.')
+          s=s.replace(marker,js,1)
+          p.write_text(s,encoding='utf-8')
           PY
-      - name: Commit fixed HTML
+      - name: Commit completed
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add standalone/poster_format23_admin_v5.html
-          git commit -m '리본 꼬리 방향 수정 완료'
+          git commit -m '행사별 배경 디자인 기능 완료'
           git push
