@@ -147,85 +147,9 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
 <style>
 .artistCard img{object-fit:cover!important;object-position:center center!important;transform:none!important}
 </style>
-
-<!-- MAIN-ARTIST-EXCLUDE-PATCH -->
-<script>
-(function(){
-  const originalRenderPoster = window.renderPoster;
-  if(typeof originalRenderPoster !== 'function') return;
-  window.renderPoster = function(){
-    const grid = document.getElementById('artistGrid');
-    if(!grid) return originalRenderPoster();
-    grid.innerHTML='';
-    window.performers.filter(p=>!p.main).forEach(p=>{
-      const c=document.createElement('div');
-      c.className='artistCard';
-      c.innerHTML=(p.src?'<img src="'+p.src+'">':'<div style="height:50px;background:#151515"></div>')+'<div class="name">'+(window.escapeHtml?window.escapeHtml(p.text||'출연가수'):(p.text||'출연가수'))+'</div>';
-      grid.appendChild(c);
-    });
-    const main=window.performers.find(p=>p.main);
-    const ma=document.getElementById('mainArtist');
-    if(ma){
-      if(main){
-        const img=document.getElementById('mainImg');
-        const label=document.getElementById('mainLabel');
-        label.textContent=main.text||'메인가수';
-        if(main.src){img.src=main.src;img.style.display='block';ma.style.display='block';}
-        else{img.removeAttribute('src');img.style.display='none';ma.style.display='block';}
-      }else{ma.style.display='none';}
-    }
-  };
-})();
-</script>
-
-<!-- DUPLICATE-MAIN-ARTIST-FIX -->
-<script>
-(function(){
-  function removeMainDuplicate(){
-    const main=document.getElementById('mainImg');
-    const grid=document.getElementById('artistGrid');
-    if(!main||!grid||!main.src)return;
-    const src=main.src;
-    grid.querySelectorAll('.artistCard img').forEach(function(img){
-      if(img.src===src){
-        const card=img.closest('.artistCard');
-        if(card)card.remove();
-      }
-    });
-  }
-  const grid=document.getElementById('artistGrid');
-  if(grid){new MutationObserver(removeMainDuplicate).observe(grid,{childList:true,subtree:true});}
-  const main=document.getElementById('mainImg');
-  if(main){new MutationObserver(removeMainDuplicate).observe(main,{attributes:true,attributeFilter:['src']});}
-  setTimeout(removeMainDuplicate,50);
-  setTimeout(removeMainDuplicate,300);
-  setTimeout(removeMainDuplicate,1000);
-})();
-</script>
-
-<!-- MAIN-ARTIST-DOM-FILTER -->
-<script>
-(function(){
-  function clean(){
-    var main=document.getElementById('mainImg');
-    var grid=document.getElementById('artistGrid');
-    if(!main||!grid||!main.src)return;
-    var src=main.src;
-    grid.querySelectorAll('.artistCard').forEach(function(card){
-      var img=card.querySelector('img');
-      if(img && img.src===src) card.remove();
-    });
-  }
-  var grid=document.getElementById('artistGrid');
-  if(grid)new MutationObserver(clean).observe(grid,{childList:true,subtree:true});
-  var main=document.getElementById('mainImg');
-  if(main)new MutationObserver(clean).observe(main,{attributes:true,attributeFilter:['src']});
-  setTimeout(clean,100);setTimeout(clean,500);setTimeout(clean,1500);
-})();
-</script>
 \n
 
-<style id="FINAL-POSTER-FIX-V2">
+<style id="FINAL-POSTER-FIX-V3">
 .infoInvite{width:190px!important;right:2px!important;font-size:16px!important;line-height:1.28!important;}
 .infoInvite .accent{font-size:22px!important;margin:1px 2px!important;}
 .backgroundActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:12px!important;}
@@ -238,40 +162,39 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
 (function(){
   function setupBackground(){
     var apply=document.getElementById('applyBtn');
-    if(!apply || document.getElementById('externalBgBtn')) return;
+    if(!apply || document.getElementById('externalBgBtn'))return;
     var parent=apply.parentNode;
     var actions=document.createElement('div');
     actions.className='backgroundActions';
     parent.insertBefore(actions,apply);
     actions.appendChild(apply);
     var btn=document.createElement('button');
-    btn.id='externalBgBtn'; btn.type='button'; btn.className='externalBgBtn';
+    btn.id='externalBgBtn';btn.type='button';btn.className='externalBgBtn';
     btn.textContent='📁 외부 파일 불러오기';
     actions.appendChild(btn);
     var input=document.createElement('input');
-    input.id='externalBgInput'; input.type='file'; input.accept='image/*';
+    input.id='externalBgInput';input.type='file';input.accept='image/*';
     parent.insertBefore(input,actions.nextSibling);
     btn.onclick=function(){input.click()};
     input.onchange=function(){
-      var f=input.files&&input.files[0]; if(!f)return;
-      if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
+      var f=input.files&&input.files[0];if(!f)return;
+      if(!f.type||!f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
       var r=new FileReader();
       r.onload=function(e){
-        var b=document.getElementById('bg'); if(b)b.src=e.target.result;
-        var st=document.getElementById('status'); if(st)st.textContent='현재 적용: 외부 파일 · '+f.name;
-        var mark=document.getElementById('mark'); if(mark)mark.textContent='외부 파일 적용됨';
+        var b=document.getElementById('bg');if(b)b.src=e.target.result;
+        var st=document.getElementById('status');if(st)st.textContent='현재 적용: 외부 파일 · '+f.name;
+        var mark=document.getElementById('mark');if(mark)mark.textContent='외부 파일 적용됨';
       };
       r.onerror=function(){alert('외부 이미지 파일을 읽지 못했습니다. 다시 선택해 주세요.');};
       r.readAsDataURL(f);
     };
   }
-
   function setupPhoto(){
     if(window.__FINAL_PHOTO_HANDLER__)return;
     window.__FINAL_PHOTO_HANDLER__=true;
     document.addEventListener('change',function(e){
       var input=e.target;
-      if(!input || !input.matches('#performers input[type="file"]'))return;
+      if(!input||!input.matches('#performers input[type="file"]'))return;
       e.stopImmediatePropagation();
       var card=input.closest('.performer');
       var cards=Array.prototype.slice.call(document.querySelectorAll('#performers .performer'));
@@ -279,7 +202,7 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
       var p=(typeof performers!=='undefined')?performers[idx]:null;
       var f=input.files&&input.files[0];
       if(!p||!f)return;
-      if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
+      if(!f.type||!f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
       var reader=new FileReader();
       reader.onload=function(ev){
         p.src=ev.target.result;
@@ -289,10 +212,7 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
         var mainImg=document.getElementById('mainImg');
         var label=document.getElementById('mainLabel');
         if(p.main){
-          mainImg.src=p.src;
-          mainImg.style.display='block';
-          main.style.display='block';
-          label.textContent=p.text||'메인가수';
+          mainImg.src=p.src;mainImg.style.display='block';main.style.display='block';label.textContent=p.text||'메인가수';
         }else if(typeof renderPoster==='function'){
           renderPoster();
         }
@@ -301,174 +221,10 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
       reader.readAsDataURL(f);
     },true);
   }
-
   function setup(){setupBackground();setupPhoto();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
 </script>
-
-<style id="FINAL-POSTER-FIX-V2">
-.infoInvite{width:190px!important;right:2px!important;font-size:16px!important;line-height:1.28!important;}
-.infoInvite .accent{font-size:22px!important;margin:1px 2px!important;}
-.backgroundActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:12px!important;}
-.backgroundActions .apply{margin-top:0!important;padding:14px 8px!important;}
-.externalBgBtn{width:100%;padding:14px 8px;border:0;border-radius:7px;background:#243f82;color:#fff;font-weight:900;cursor:pointer;font-size:12px;}
-.externalBgBtn:hover{filter:brightness(1.08)}
-#externalBgInput{display:none}
-</style>
-<script>
-(function(){
-  function setupBackground(){
-    var apply=document.getElementById('applyBtn');
-    if(!apply || document.getElementById('externalBgBtn')) return;
-    var parent=apply.parentNode;
-    var actions=document.createElement('div');
-    actions.className='backgroundActions';
-    parent.insertBefore(actions,apply);
-    actions.appendChild(apply);
-    var btn=document.createElement('button');
-    btn.id='externalBgBtn'; btn.type='button'; btn.className='externalBgBtn';
-    btn.textContent='📁 외부 파일 불러오기';
-    actions.appendChild(btn);
-    var input=document.createElement('input');
-    input.id='externalBgInput'; input.type='file'; input.accept='image/*';
-    parent.insertBefore(input,actions.nextSibling);
-    btn.onclick=function(){input.click()};
-    input.onchange=function(){
-      var f=input.files&&input.files[0]; if(!f)return;
-      if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
-      var r=new FileReader();
-      r.onload=function(e){
-        var b=document.getElementById('bg'); if(b)b.src=e.target.result;
-        var st=document.getElementById('status'); if(st)st.textContent='현재 적용: 외부 파일 · '+f.name;
-        var mark=document.getElementById('mark'); if(mark)mark.textContent='외부 파일 적용됨';
-      };
-      r.onerror=function(){alert('외부 이미지 파일을 읽지 못했습니다. 다시 선택해 주세요.');};
-      r.readAsDataURL(f);
-    };
-  }
-
-  function setupPhoto(){
-    if(window.__FINAL_PHOTO_HANDLER__)return;
-    window.__FINAL_PHOTO_HANDLER__=true;
-    document.addEventListener('change',function(e){
-      var input=e.target;
-      if(!input || !input.matches('#performers input[type="file"]'))return;
-      e.stopImmediatePropagation();
-      var card=input.closest('.performer');
-      var cards=Array.prototype.slice.call(document.querySelectorAll('#performers .performer'));
-      var idx=cards.indexOf(card);
-      var p=(typeof performers!=='undefined')?performers[idx]:null;
-      var f=input.files&&input.files[0];
-      if(!p||!f)return;
-      if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        p.src=ev.target.result;
-        var thumb=card.querySelector('.thumb');
-        if(thumb){thumb.src=p.src;thumb.style.display='block';}
-        var main=document.getElementById('mainArtist');
-        var mainImg=document.getElementById('mainImg');
-        var label=document.getElementById('mainLabel');
-        if(p.main){
-          mainImg.src=p.src;
-          mainImg.style.display='block';
-          main.style.display='block';
-          label.textContent=p.text||'메인가수';
-        }else if(typeof renderPoster==='function'){
-          renderPoster();
-        }
-      };
-      reader.onerror=function(){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');};
-      reader.readAsDataURL(f);
-    },true);
-  }
-
-  function setup(){setupBackground();setupPhoto();}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
-})();
-</script>
-
-<style id="FINAL-POSTER-FIX-V2">
-.infoInvite{width:190px!important;right:2px!important;font-size:16px!important;line-height:1.28!important;}
-.infoInvite .accent{font-size:22px!important;margin:1px 2px!important;}
-.backgroundActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:12px!important;}
-.backgroundActions .apply{margin-top:0!important;padding:14px 8px!important;}
-.externalBgBtn{width:100%;padding:14px 8px;border:0;border-radius:7px;background:#243f82;color:#fff;font-weight:900;cursor:pointer;font-size:12px;}
-.externalBgBtn:hover{filter:brightness(1.08)}
-#externalBgInput{display:none}
-</style>
-<script>
-(function(){
-  function setupBackground(){
-    var apply=document.getElementById('applyBtn');
-    if(!apply || document.getElementById('externalBgBtn')) return;
-    var parent=apply.parentNode;
-    var actions=document.createElement('div');
-    actions.className='backgroundActions';
-    parent.insertBefore(actions,apply);
-    actions.appendChild(apply);
-    var btn=document.createElement('button');
-    btn.id='externalBgBtn'; btn.type='button'; btn.className='externalBgBtn';
-    btn.textContent='📁 외부 파일 불러오기';
-    actions.appendChild(btn);
-    var input=document.createElement('input');
-    input.id='externalBgInput'; input.type='file'; input.accept='image/*';
-    parent.insertBefore(input,actions.nextSibling);
-    btn.onclick=function(){input.click()};
-    input.onchange=function(){
-      var f=input.files&&input.files[0]; if(!f)return;
-      if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
-      var r=new FileReader();
-      r.onload=function(e){
-        var b=document.getElementById('bg'); if(b)b.src=e.target.result;
-        var st=document.getElementById('status'); if(st)st.textContent='현재 적용: 외부 파일 · '+f.name;
-        var mark=document.getElementById('mark'); if(mark)mark.textContent='외부 파일 적용됨';
-      };
-      r.onerror=function(){alert('외부 이미지 파일을 읽지 못했습니다. 다시 선택해 주세요.');};
-      r.readAsDataURL(f);
-    };
-  }
-
-  function setupPhoto(){
-    if(window.__FINAL_PHOTO_HANDLER__)return;
-    window.__FINAL_PHOTO_HANDLER__=true;
-    document.addEventListener('change',function(e){
-      var input=e.target;
-      if(!input || !input.matches('#performers input[type="file"]'))return;
-      e.stopImmediatePropagation();
-      var card=input.closest('.performer');
-      var cards=Array.prototype.slice.call(document.querySelectorAll('#performers .performer'));
-      var idx=cards.indexOf(card);
-      var p=(typeof performers!=='undefined')?performers[idx]:null;
-      var f=input.files&&input.files[0];
-      if(!p||!f)return;
-      if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        p.src=ev.target.result;
-        var thumb=card.querySelector('.thumb');
-        if(thumb){thumb.src=p.src;thumb.style.display='block';}
-        var main=document.getElementById('mainArtist');
-        var mainImg=document.getElementById('mainImg');
-        var label=document.getElementById('mainLabel');
-        if(p.main){
-          mainImg.src=p.src;
-          mainImg.style.display='block';
-          main.style.display='block';
-          label.textContent=p.text||'메인가수';
-        }else if(typeof renderPoster==='function'){
-          renderPoster();
-        }
-      };
-      reader.onerror=function(){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');};
-      reader.readAsDataURL(f);
-    },true);
-  }
-
-  function setup(){setupBackground();setupPhoto();}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
-})();
-</script>
+<!-- FINAL-POSTER-FIX-V3 -->
 </body>
 </html>
