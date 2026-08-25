@@ -15,16 +15,16 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          marker='<!-- performer-photo-fill-v3 -->'
+          marker='<!-- performer-photo-fill-v4 -->'
           if marker in s:
-              raise SystemExit('already fixed')
+              raise SystemExit(0)
           inject='''
-<style id="performer-photo-fill-v3">
-.artistCard{position:relative;overflow:hidden!important}
-.artistCard img{width:100%!important;height:82px!important;object-fit:cover!important;object-position:center center!important;padding:0!important;display:block!important;transform:scale(1.55)!important;transform-origin:center center!important}
-.artistCard .name{position:relative;z-index:3;background:rgba(0,0,0,.92);height:24px;line-height:14px;padding:5px 3px!important}
+<style id="performer-photo-fill-v4">
+.artistCard{position:relative!important;overflow:hidden!important}
+.artistCard img{width:100%!important;height:82px!important;object-fit:cover!important;object-position:center center!important;padding:0!important;display:block!important;transform:scale(2.15)!important;transform-origin:center center!important}
+.artistCard .name{position:relative!important;z-index:3!important;background:rgba(0,0,0,.92)!important;height:24px!important;line-height:14px!important;padding:5px 3px!important}
 </style>
-<!-- performer-photo-fill-v3 -->
+<!-- performer-photo-fill-v4 -->
 '''
           s=s.replace('</body>',inject+'</body>',1)
           p.write_text(s,encoding='utf-8')
@@ -32,6 +32,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m '출연자 사진 칸 전체 채움 수정'
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m '출연자 사진 칸 전체 사용 보정'
           git pull --rebase origin main
           git push
