@@ -10,27 +10,87 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch poster layout and design toggle
+      - name: Add real poster format selector
         shell: python
         run: |
           from pathlib import Path
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          old_grid = 'grid-template-columns:repeat(8,minmax(0,1fr))'
-          if old_grid in s:
-              s = s.replace(old_grid, 'grid-template-columns:repeat(7,minmax(0,1fr))', 1)
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          # Keep existing 7-column and background toggle behavior.
+          s=s.replace('grid-template-columns:repeat(8,minmax(0,1fr))','grid-template-columns:repeat(7,minmax(0,1fr))',1)
           if "let category='all',sel=null,performers=[],externalBg=null;" in s and 'designOpen' not in s:
-              s = s.replace("let category='all',sel=null,performers=[],externalBg=null;", "let category='all',sel=null,performers=[],externalBg=null,designOpen=false;", 1)
-          old = "b.onclick=()=>{category=x[0];grid.style.display='grid';renderCats();render()}"
-          new = "b.onclick=()=>{if(category===x[0]&&designOpen){designOpen=false}else{category=x[0];designOpen=true}grid.style.display=designOpen?'grid':'none';renderCats();render()}"
-          if old in s:
-              s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
+              s=s.replace("let category='all',sel=null,performers=[],externalBg=null;", "let category='all',sel=null,performers=[],externalBg=null,designOpen=false;",1)
+          old="b.onclick=()=>{category=x[0];grid.style.display='grid';renderCats();render()}"
+          new="b.onclick=()=>{if(category===x[0]&&designOpen){designOpen=false}else{category=x[0];designOpen=true}grid.style.display=designOpen?'grid':'none';renderCats();render()}"
+          s=s.replace(old,new,1)
+
+          # Add the format buttons once, immediately before performer management.
+          if 'id="realPosterFormatSection"' not in s:
+              controls='''
+<div class="section" id="realPosterFormatSection">
+<h3>④ 포스터 형식 선택</h3>
+<div class="realPosterFormatButtons">
+<button type="button" class="realPosterFormatBtn active" data-format="1">① 현재형</button>
+<button type="button" class="realPosterFormatBtn" data-format="2">② 행사형</button>
+<button type="button" class="realPosterFormatBtn" data-format="3">③ 축제형</button>
+</div>
+<p class="hint">행사정보와 사진은 그대로 사용하고 포스터 전체 구성만 바꿉니다.</p>
+</div>
+'''
+              s=s.replace('<div class="section"><h3>③ 출연자 관리',controls+'<div class="section"><h3>③ 출연자 관리',1)
+
+              css='''
+<style id="realPosterFormatCss">
+.realPosterFormatButtons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}.realPosterFormatBtn{padding:11px 4px;border:1px solid #40506a;border-radius:7px;background:#172235;color:#dce5f2;font-weight:900;font-size:11px;cursor:pointer}.realPosterFormatBtn.active{background:#ffd21c;color:#111;border-color:#ffd21c}
+.realFormatCanvas{position:absolute;inset:0;z-index:30;display:none;overflow:hidden}
+.poster.realFormat2 .realFormatCanvas.format2,.poster.realFormat3 .realFormatCanvas.format3{display:block}
+.poster.realFormat2>.txt,.poster.realFormat3>.txt,.poster.realFormat2>.performersTitle,.poster.realFormat3>.performersTitle,.poster.realFormat2>.artistArea,.poster.realFormat3>.artistArea,.poster.realFormat2>.mainArtist,.poster.realFormat3>.mainArtist,.poster.realFormat2>.info,.poster.realFormat3>.info,.poster.realFormat2>.infoInvite,.poster.realFormat3>.infoInvite,.poster.realFormat2>.posterFooter,.poster.realFormat3>.posterFooter,.poster.realFormat2>.mark,.poster.realFormat3>.mark{display:none!important}
+.rf{position:absolute;inset:0;color:#fff;font-family:Arial,"Noto Sans KR",sans-serif;text-align:center;text-shadow:2px 3px 5px #000;background:linear-gradient(180deg,rgba(0,8,25,.12),rgba(0,8,25,.72))}.rf2{padding:25px 20px}.rf2 .top{font-size:14px;color:#ffd76a;font-weight:900}.rf2 .title{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:58px;font-weight:900;line-height:1.05;margin-top:12px}.rf2 .sub{font-size:18px;font-weight:900;margin-top:6px}.rf2 .date{font-size:25px;color:#ffd21c;font-weight:900;margin-top:18px}.rf2 .venue{font-size:15px;margin-top:4px}.rf2 .boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.rf2 .box{min-height:105px;border:1px solid #ffd21c;border-radius:9px;background:rgba(4,15,35,.76);padding:10px;text-align:left}.rf2 .box h4{margin:0 0 7px;text-align:center;color:#ffd21c}.rf2 .box p{font-size:10px;line-height:1.45;margin:3px 0}.rf2 .people{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:12px}.rfPerson{background:rgba(0,0,0,.7);border:1px solid #ffd21c;border-radius:5px;overflow:hidden}.rfPerson img{width:100%;height:55px;object-fit:cover;display:block}.rfPerson b{display:block;padding:4px 2px;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rf2 .footer{position:absolute;left:18px;right:18px;bottom:14px;border-top:1px solid #d5ad55;padding-top:7px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf3{padding:20px}.rf3 .year{font-size:22px;font-weight:900}.rf3 .title{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:72px;color:#fff;font-weight:900;line-height:.95;text-shadow:4px 5px 0 #9d1111,6px 7px 7px #000;margin-top:5px}.rf3 .sub{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:62px;color:#ffd21c;font-weight:900;margin-top:4px}.rf3 .ribbon{margin:12px auto 0;max-width:470px;background:#c51d1d;border:2px solid #ffb51c;border-radius:3px;padding:9px;font-size:14px;font-weight:900}.rf3 .meta{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px auto 0;max-width:470px}.rf3 .meta div{background:rgba(0,0,0,.68);border:1px solid #ffd21c;border-radius:7px;padding:8px;font-size:11px}.rf3 .meta b{color:#ffd21c;margin-right:4px}.rf3 .people{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}.rf3 .rfPerson img{height:62px}.rf3 .cards{position:absolute;left:18px;right:18px;bottom:62px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.rf3 .card2{background:rgba(255,255,255,.94);color:#111;text-shadow:none;border-radius:9px;padding:7px;min-height:85px}.rf3 .card2 h4{margin:0 0 5px;font-size:12px}.rf3 .card2 p{margin:3px 0;font-size:8px;line-height:1.35}.rf3 .bottom{position:absolute;left:18px;right:18px;bottom:15px;background:#ffd21c;color:#142039;text-shadow:none;border-radius:18px;padding:7px;font-size:10px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+'''
+              s=s.replace('</style>',css+'</style>',1)
+
+              html='''
+<div class="realFormatCanvas format2"><div class="rf rf2">
+<div class="top" data-r="headline"></div><div class="title" data-r="title"></div><div class="sub" data-r="highlight"></div><div class="date" data-r="date"></div><div class="venue" data-r="venue"></div>
+<div class="boxes"><div class="box"><h4>행사 프로그램</h4><p data-r="msg1"></p><p data-r="msg2"></p></div><div class="box"><h4>함께하는 무대</h4><p data-r="host"></p><p data-r="org"></p></div></div>
+<div class="people" data-r="people"></div><div class="footer" data-r="footer"></div></div></div>
+<div class="realFormatCanvas format3"><div class="rf rf3">
+<div class="year" data-r="year"></div><div class="title" data-r="title"></div><div class="sub" data-r="highlight"></div><div class="ribbon" data-r="ribbon"></div>
+<div class="meta"><div><b>📅</b><span data-r="date"></span></div><div><b>📍</b><span data-r="venue"></span></div></div><div class="people" data-r="people"></div>
+<div class="cards"><div class="card2"><h4>맛있는 먹거리</h4><p>지역 먹거리 · 체험부스</p><p>시장 특색상품 · 즐길거리</p></div><div class="card2"><h4>신나는 공연</h4><p>주민공연 · 초청공연</p><p>버스킹 · 특별무대</p></div><div class="card2"><h4>즐길거리 가득</h4><p>플리마켓 · 체험행사</p><p>가족 참여 프로그램</p></div><div class="card2"><h4>특별 이벤트</h4><p>상품권 · 경품추첨</p><p>현장 참여 이벤트</p></div></div><div class="bottom" data-r="footer"></div></div></div>
+'''
+              s=s.replace('</div></main></div>\n<script src=',html+'</div></main></div>\n<script src=',1)
+
+              js='''
+<script id="realPosterFormatJs">
+(function(){
+function q(sel,root){return (root||document).querySelector(sel)}
+function qa(sel,root){return Array.from((root||document).querySelectorAll(sel))}
+function txt(id){var e=document.getElementById(id);return e?e.value:''}
+function dateText(){var d=txt('date'),t=txt('time');if(!d)return t;var p=d.split('-');return p[0]+'. '+Number(p[1])+'. '+Number(p[2])+'.'+(t?' · '+t:'')}
+function people(){return qa('#artistGrid .artistCard').map(function(c){var im=q('img',c),nm=q('.name',c);return {src:im&&im.src,name:nm?nm.textContent:'출연가수'}})}
+function fill(){
+var poster=q('.poster');if(!poster)return;var title=txt('title')||'행사 제목',hi=txt('highlight'),head=txt('headline'),venue=txt('venue'),host=txt('host')==='직접 입력'?txt('hostCustom'):txt('host'),org=txt('organizer')==='직접 입력'?txt('organizerCustom'):txt('organizer'),msg1=txt('bottomMsg1'),msg2=txt('bottomMsg2'),ps=people();
+qa('.realFormatCanvas').forEach(function(c){qa('[data-r]',c).forEach(function(e){var k=e.getAttribute('data-r');if(k==='title')e.textContent=title;else if(k==='highlight')e.textContent=hi;else if(k==='headline')e.textContent=head;else if(k==='venue')e.textContent=venue;else if(k==='date')e.textContent=dateText();else if(k==='year')e.textContent=(txt('date')||'').slice(0,4)+'년';else if(k==='ribbon')e.textContent=msg1||'먹거리 · 볼거리 · 즐길거리 가득한 행사';else if(k==='msg1')e.textContent=msg1||'먹거리 · 볼거리 · 즐길거리 가득';else if(k==='msg2')e.textContent=msg2||'지역 예술공연 · 시민 참여';else if(k==='host')e.textContent='주최 '+(host||'');else if(k==='org')e.textContent='주관 '+(org||'');else if(k==='footer')e.textContent=(msg2||'많은 관심과 참여 부탁드립니다!')+'　 '+(host||'')+'　 '+(org||'');});});
+qa('.realFormatCanvas .people').forEach(function(box){box.innerHTML=ps.slice(0,14).map(function(p){return '<div class="rfPerson">'+(p.src?'<img src="'+p.src+'">':'<div style="height:55px;background:#111"></div>')+'<b>'+String(p.name).replace(/[&<>]/g,'')+'</b></div>'}).join('')})
+}
+function set(n){var p=q('.poster');if(!p)return;p.classList.remove('realFormat2','realFormat3');if(n==='2')p.classList.add('realFormat2');if(n==='3')p.classList.add('realFormat3');qa('.realPosterFormatBtn').forEach(function(b){b.classList.toggle('active',b.dataset.format===n)});try{localStorage.setItem('posterFormat',n)}catch(e){}fill()}
+function init(){qa('.realPosterFormatBtn').forEach(function(b){b.addEventListener('click',function(){set(b.dataset.format)})});document.addEventListener('input',function(e){if(e.target.closest('.side'))setTimeout(fill,50)});document.addEventListener('change',function(e){if(e.target.closest('.side'))setTimeout(fill,80)});var saved='1';try{saved=localStorage.getItem('posterFormat')||'1'}catch(e){}set(saved==='2'||saved==='3'?saved:'1')}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+'''
+              s=s.replace('</body>',js+'</body>',1)
+
+          p.write_text(s,encoding='utf-8')
       - name: Commit
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m '출연자 7열 및 배경 디자인 토글 적용' || exit 0
+          git commit -m '포스터 1 2 3 실제 형식 선택 기능 적용' || exit 0
           git push
