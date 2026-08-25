@@ -1,0 +1,105 @@
+name: Build real poster templates
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add real poster template system
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- REAL-POSTER-TEMPLATES-V2 -->'
+          if marker in s:
+              raise SystemExit(0)
+
+          controls=r'''
+<div class="section realLayoutSection">
+  <h3>④ 포스터 형식 선택</h3>
+  <div class="realLayoutBtns">
+    <button type="button" class="realLayoutBtn active" data-real-layout="1">① 현재형</button>
+    <button type="button" class="realLayoutBtn" data-real-layout="2">② 행사형</button>
+    <button type="button" class="realLayoutBtn" data-real-layout="3">③ 축제형</button>
+  </div>
+  <p class="hint">입력한 행사정보·메인가수·출연자·사진은 그대로 두고, 완성 포스터의 구성만 바꿉니다.</p>
+</div>
+'''
+
+          css=r'''
+<style id="real-poster-templates-css">
+.realLayoutBtns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 5px}.realLayoutBtn{padding:11px 5px;border:1px solid #40506a;border-radius:7px;background:#172235;color:#dce5f2;font-weight:900;font-size:11px;cursor:pointer}.realLayoutBtn.active{background:#ffd21c;color:#111;border-color:#ffd21c}
+.realTemplate{position:absolute;inset:0;z-index:20;display:none;overflow:hidden;background:#07152c;color:#fff}.poster.real2 .realTemplate.layout2,.poster.real3 .realTemplate.layout3{display:block}.poster.real2>.bg,.poster.real3>.bg{z-index:1}.poster.real2>.shade,.poster.real3>.shade{z-index:2}.poster.real2>.txt,.poster.real3>.txt,.poster.real2>.performersTitle,.poster.real3>.performersTitle,.poster.real2>.artistArea,.poster.real3>.artistArea,.poster.real2>.mainArtist,.poster.real3>.mainArtist,.poster.real2>.info,.poster.real3>.info,.poster.real2>.infoInvite,.poster.real3>.infoInvite,.poster.real2>.posterFooter,.poster.real3>.posterFooter,.poster.real2>.mark,.poster.real3>.mark{display:none!important}
+.r2{position:absolute;inset:0;padding:26px 24px;font-family:Arial,"Noto Sans KR",sans-serif;background:linear-gradient(180deg,rgba(3,12,28,.35),rgba(3,12,28,.72));text-align:center}.r2Top{font-size:14px;color:#ffd76a;font-weight:800;margin-bottom:10px}.r2Title{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:57px;line-height:1.02;font-weight:900;text-shadow:3px 4px 6px #000}.r2Sub{font-size:17px;font-weight:900;margin-top:8px}.r2Date{font-size:25px;font-weight:900;color:#ffd21c;margin-top:17px}.r2Venue{font-size:15px;margin-top:4px}.r2Boxes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.r2Box{border:1px solid #ffd21c;border-radius:10px;background:rgba(4,18,40,.76);padding:11px 10px;text-align:left;min-height:105px}.r2Box h4{margin:0 0 8px;text-align:center;color:#ffd21c;font-size:15px}.r2Box p{margin:4px 0;font-size:10px;line-height:1.5}.r2Schedule{margin-top:13px;border-top:1px solid #d5ad55;border-bottom:1px solid #d5ad55;padding:8px 0;font-size:11px}.r2Performers{margin-top:10px;display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.r2Person{background:rgba(0,0,0,.6);border:1px solid #d6ae53;border-radius:5px;overflow:hidden}.r2Person img{width:100%;height:54px;object-fit:cover;display:block}.r2Person b{display:block;font-size:8px;padding:4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r2Footer{position:absolute;left:20px;right:20px;bottom:14px;border-top:1px solid #d5ad55;padding-top:7px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r2Footer strong{color:#ffd21c}
+.r3{position:absolute;inset:0;padding:25px 20px;background:linear-gradient(180deg,rgba(2,10,25,.2),rgba(2,10,25,.78));text-align:center}.r3Year{font-size:24px;font-weight:900}.r3Title{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:76px;line-height:.95;color:#fff;text-shadow:4px 5px 0 #9c1010,6px 7px 7px #000;margin-top:5px}.r3Highlight{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:68px;line-height:1;color:#ffd21c;font-weight:900;text-shadow:4px 5px 6px #000;margin-top:5px}.r3Ribbon{margin:14px auto 0;max-width:460px;background:#c51d1d;border:2px solid #ffb41e;padding:10px 12px;font-size:15px;font-weight:900;border-radius:3px}.r3Meta{margin:13px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:455px}.r3Meta div{background:rgba(0,0,0,.62);border:1px solid #ffd21c;border-radius:7px;padding:8px;font-size:12px}.r3Meta b{color:#ffd21c;margin-right:5px}.r3People{margin-top:12px;display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.r3Person{background:#071225;border:2px solid #e8d8bb;border-radius:6px;overflow:hidden}.r3Person img{width:100%;height:68px;object-fit:cover;display:block}.r3Person b{display:block;font-size:8px;padding:4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.r3Cards{position:absolute;left:20px;right:20px;bottom:70px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.r3Card{background:rgba(255,255,255,.92);color:#111;border-radius:10px;padding:8px 5px;min-height:92px}.r3Card h4{margin:0 0 5px;font-size:12px}.r3Card p{margin:3px 0;font-size:8px;line-height:1.35}.r3Bottom{position:absolute;left:20px;right:20px;bottom:16px;background:#ffd21c;color:#142039;border-radius:20px;padding:7px;font-size:11px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+'''
+
+          html=r'''
+<div class="realTemplate layout2" id="realTemplate2"><div class="r2">
+<div class="r2Top" id="r2Headline"></div><div class="r2Title" id="r2Title"></div><div class="r2Sub" id="r2Highlight"></div><div class="r2Date" id="r2Date"></div><div class="r2Venue" id="r2Venue"></div>
+<div class="r2Boxes"><div class="r2Box"><h4>행사 프로그램</h4><p id="r2Program"></p><p id="r2Program2"></p></div><div class="r2Box"><h4>함께하는 무대</h4><p id="r2Organize"></p><p id="r2Host"></p></div></div>
+<div class="r2Schedule" id="r2Schedule"></div><div class="r2Performers" id="r2Performers"></div><div class="r2Footer" id="r2Footer"></div>
+</div></div>
+<div class="realTemplate layout3" id="realTemplate3"><div class="r3">
+<div class="r3Year" id="r3Year"></div><div class="r3Title" id="r3Title"></div><div class="r3Highlight" id="r3Highlight"></div><div class="r3Ribbon" id="r3Ribbon"></div>
+<div class="r3Meta"><div><b>📅</b><span id="r3Date"></span></div><div><b>📍</b><span id="r3Venue"></span></div></div>
+<div class="r3People" id="r3People"></div>
+<div class="r3Cards"><div class="r3Card"><h4>맛있는 먹거리</h4><p>지역 먹거리 · 체험부스</p><p>시장 특색상품 · 즐길거리</p></div><div class="r3Card"><h4>신나는 공연</h4><p>주민공연 · 초청공연</p><p>버스킹 · 특별무대</p></div><div class="r3Card"><h4>즐길거리 가득</h4><p>플리마켓 · 체험행사</p><p>가족 참여 프로그램</p></div><div class="r3Card"><h4>특별 이벤트</h4><p>상품권 · 경품추첨</p><p>현장 참여 이벤트</p></div></div>
+<div class="r3Bottom" id="r3Bottom"></div>
+</div></div>
+'''
+
+          js=r'''
+<script id="real-poster-templates-js">
+(function(){
+  function qs(id){return document.getElementById(id)}
+  function esc(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function val(id){var e=qs(id);return e?e.value:''}
+  function dateText(){var d=val('date');if(!d)return '';var p=d.split('-');return p.length===3?p[0]+'. '+Number(p[1])+'. '+Number(p[2])+'.':d}
+  function names(){return Array.from(document.querySelectorAll('#performers .performer')).map(function(card){var inp=card.querySelector('input[type=text]');var img=card.querySelector('.thumb');return {name:inp?inp.value:'출연가수',src:img&&img.src&&img.style.display!=='none'?img.src:''}}).filter(function(p){return p.name||p.src})}
+  function render(){
+    var title=val('title')||'행사 제목', hi=val('highlight')||'', head=val('headline')||'', venue=val('venue')||'', time=val('time')||'', host=val('host')==='직접 입력'?val('hostCustom'):val('host'), org=val('organizer')==='직접 입력'?val('organizerCustom'):val('organizer');
+    var ps=names();
+    qs('r2Headline').textContent=head;qs('r2Title').textContent=title;qs('r2Highlight').textContent=hi;qs('r2Date').textContent=dateText()+(time?' · '+time:'');qs('r2Venue').textContent=venue;
+    qs('r2Program').textContent=val('bottomMsg1')||'먹거리 · 볼거리 · 즐길거리 가득한 행사';qs('r2Program2').textContent=val('bottomMsg2')||'지역 예술공연 · 시민 참여 프로그램';qs('r2Organize').textContent=(org||host||'행사 관계기관')+'과 함께하는 특별무대';qs('r2Host').textContent='많은 관심과 참여 부탁드립니다!';qs('r2Schedule').textContent=(val('date')||'')+'  '+time+'  ·  '+venue;
+    qs('r2Performers').innerHTML=ps.slice(0,6).map(function(p){return '<div class="r2Person">'+(p.src?'<img src="'+p.src+'">':'')+'<b>'+esc(p.name)+'</b></div>'}).join('');
+    qs('r2Footer').innerHTML='<strong>주최</strong> '+esc(host||'')+'　 <strong>주관</strong> '+esc(org||'')+'　 '+esc(val('bottomMsg1')||'함께해 주세요!');
+    qs('r3Year').textContent=(val('date')||'').slice(0,4)+'년';qs('r3Title').textContent=title;qs('r3Highlight').textContent=hi;qs('r3Ribbon').textContent=(val('bottomMsg1')||'먹거리 · 볼거리 · 즐길거리 가득한 야간장터!');qs('r3Date').textContent=dateText()+(time?' '+time:'');qs('r3Venue').textContent=venue;qs('r3Bottom').textContent='주최 '+(host||'')+'　·　주관 '+(org||'')+'　·　'+(val('bottomMsg2')||'많은 관심과 참여 부탁드립니다!');
+    qs('r3People').innerHTML=ps.slice(0,12).map(function(p){return '<div class="r3Person">'+(p.src?'<img src="'+p.src+'">':'<div style="height:68px;background:#111"></div>')+'<b>'+esc(p.name)+'</b></div>'}).join('');
+  }
+  function setLayout(n){var poster=document.querySelector('.poster');if(!poster)return;poster.classList.remove('real1','real2','real3');poster.classList.add('real'+n);document.querySelectorAll('.realLayoutBtn').forEach(function(b){b.classList.toggle('active',b.dataset.realLayout===String(n))});try{localStorage.setItem('realPosterLayout',n)}catch(e){}render()}
+  function init(){
+    var poster=document.querySelector('.poster');if(!poster)return;
+    document.querySelectorAll('.realLayoutBtn').forEach(function(b){b.addEventListener('click',function(){setLayout(b.dataset.realLayout)})});
+    document.addEventListener('input',function(e){if(e.target.closest('.side'))setTimeout(render,30)});
+    document.addEventListener('change',function(e){if(e.target.closest('.side'))setTimeout(render,60)});
+    var target=qs('performers');if(target)new MutationObserver(function(){setTimeout(render,30)}).observe(target,{childList:true,subtree:true});
+    var saved='1';try{saved=localStorage.getItem('realPosterLayout')||'1'}catch(e){}setLayout(/^[123]$/.test(saved)?saved:'1');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+'''
+
+          if '<div class="section"><h3>③ 출연자 관리' not in s:
+              raise SystemExit('performer section marker not found')
+          s=s.replace('<div class="section"><h3>③ 출연자 관리',controls+'<div class="section"><h3>③ 출연자 관리',1)
+          s=s.replace('</style>',css+'</style>',1)
+          s=s.replace('</div></main></div>\n<script src=',html+'</div></main></div>\n<script src=',1)
+          s=s.replace('</body>',marker+js+'</body>',1)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m '실제 포스터 형식 1 2 3 템플릿 적용' || exit 0
+          git push
