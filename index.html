@@ -140,9 +140,36 @@ const text=el.querySelector('input[type=text]');text.oninput=e=>{p.text=e.target
 renderPoster()
 }
 function renderPoster(){
-const g=$('artistGrid');g.innerHTML='';
-performers.forEach(p=>{const c=document.createElement('div');c.className='artistCard';c.innerHTML=(p.src?'<img src="'+p.src+'">':'<div style="height:50px;background:#151515"></div>')+'<div class="name">'+escapeHtml(p.text||'출연가수')+'</div>';g.appendChild(c)});
-const ma=$('mainArtist');if(ma)ma.style.display='none';
+const g=$('artistGrid');
+g.innerHTML='';
+performers.forEach(p=>{
+const c=document.createElement('div');
+c.className='artistCard';
+c.innerHTML=(p.src?'<img src="'+p.src+'">':'<div style="height:50px;background:#151515"></div>')+'<div class="name">'+escapeHtml(p.text||'출연가수')+'</div>';
+g.appendChild(c);
+});
+
+/* 메인가수 표시 유지 */
+const main=performers.find(p=>p.main);
+const ma=$('mainArtist');
+if(ma){
+  if(main){
+    const img=$('mainImg');
+    const label=$('mainLabel');
+    label.textContent=main.text||'메인가수';
+    if(main.src){
+      img.src=main.src;
+      img.style.display='block';
+      ma.style.display='block';
+    }else{
+      img.removeAttribute('src');
+      img.style.display='none';
+      ma.style.display='block';
+    }
+  }else{
+    ma.style.display='none';
+  }
+}
 }
 $('addBtn').onclick=addPerformer;$('applyBtn').onclick=apply;
 ['headline','title','highlight','venue','date','bottomMsg1','bottomMsg2'].forEach(id=>$(id).addEventListener('input',updateText));
