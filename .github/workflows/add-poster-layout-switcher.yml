@@ -1,0 +1,120 @@
+name: Add poster layout switcher
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  add-switcher:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add three poster layout buttons
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- POSTER-LAYOUT-SWITCHER-V1 -->'
+          if marker in s:
+              raise SystemExit(0)
+
+          css=r'''
+<style id="poster-layout-switcher-css">
+/* ④ 포스터 디자인 형식 */
+.layoutSection{margin-top:16px;padding-top:14px;border-top:1px solid #30415b}
+.layoutSection h3{margin:0 0 10px;font-size:15px;color:#ffd21c}
+.layoutButtons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.layoutBtn{padding:10px 5px;border:1px solid #40506a;border-radius:7px;background:#172235;color:#dce5f2;font-weight:900;font-size:11px;cursor:pointer}
+.layoutBtn.active{background:#ffd21c;color:#111;border-color:#ffd21c}
+.layoutHint{margin-top:7px;color:#9eabc0;font-size:10px;line-height:1.4}
+
+/* 기본형은 현재 디자인을 그대로 유지 */
+.poster.layout2 .performersTitle{top:430px;left:28px;right:28px;height:44px;font-size:18px}
+.poster.layout2 .artistArea{top:485px;left:28px;right:28px;bottom:210px}
+.poster.layout2 .artistGrid{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:92px;gap:7px}
+.poster.layout2 .artistCard{height:92px}
+.poster.layout2 .artistCard img{height:69px;min-height:69px}
+.poster.layout2 .artistCard .name{height:19px;line-height:19px;font-size:10px;flex-basis:19px}
+.poster.layout2 .mainArtist{top:250px;right:28px;width:130px;height:175px}
+.poster.layout2 .t1{top:20px;font-size:14px}
+.poster.layout2 .t2{top:58px;font-size:58px}
+.poster.layout2 .t3{top:122px;font-size:62px}
+.poster.layout2 .place{top:200px;font-size:17px}
+.poster.layout2 .info{height:190px;bottom:14px;left:14px;right:14px}
+.poster.layout2 .info .infoRow{width:100%}
+.poster.layout2 .infoInvite{right:18px;bottom:35px;width:155px}
+.poster.layout2 .posterFooter{display:none}
+
+/* 공연형: 큰 메인가수 + 넓은 출연자 영역 */
+.poster.layout3 .t1{top:18px;font-size:15px}
+.poster.layout3 .t2{top:60px;font-size:62px}
+.poster.layout3 .t3{top:128px;font-size:68px}
+.poster.layout3 .place{top:205px;font-size:18px}
+.poster.layout3 .mainArtist{top:245px;right:22px;width:165px;height:220px}
+.poster.layout3 .performersTitle{top:475px;left:28px;right:28px;height:42px}
+.poster.layout3 .artistArea{top:525px;left:20px;right:20px;bottom:195px}
+.poster.layout3 .artistGrid{grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:78px;gap:4px}
+.poster.layout3 .artistCard{height:78px}
+.poster.layout3 .artistCard img{height:57px;min-height:57px}
+.poster.layout3 .artistCard .name{height:17px;line-height:17px;font-size:8px;flex-basis:17px}
+.poster.layout3 .info{height:165px;bottom:20px}
+
+/* 디자인 전환 시 포스터 안의 메인 타이틀을 조금 더 선명하게 */
+.poster.layout2 .t2,.poster.layout2 .t3,.poster.layout3 .t2,.poster.layout3 .t3{text-shadow:3px 4px 6px rgba(0,0,0,.95)}
+</style>
+'''
+
+          html=r'''
+<div class="layoutSection" id="layoutSection">
+  <h3>④ 포스터 디자인 형식</h3>
+  <div class="layoutButtons">
+    <button type="button" class="layoutBtn active" data-layout="1">① 기본형</button>
+    <button type="button" class="layoutBtn" data-layout="2">② 행사형</button>
+    <button type="button" class="layoutBtn" data-layout="3">③ 공연형</button>
+  </div>
+  <div class="layoutHint">행사 정보·사진은 그대로 두고 포스터 배치만 변경합니다.</div>
+</div>
+'''
+
+          script=r'''
+<script id="poster-layout-switcher-js">
+(function(){
+  function init(){
+    var poster=document.querySelector('.poster');
+    var section=document.getElementById('layoutSection');
+    if(!poster || !section) return;
+    var buttons=section.querySelectorAll('.layoutBtn');
+    function setLayout(n){
+      poster.classList.remove('layout1','layout2','layout3');
+      poster.classList.add('layout'+n);
+      buttons.forEach(function(b){b.classList.toggle('active',b.dataset.layout===String(n));});
+      try{localStorage.setItem('eventPosterLayout',String(n));}catch(e){}
+    }
+    buttons.forEach(function(b){b.addEventListener('click',function(){setLayout(b.dataset.layout);});});
+    var saved='1';
+    try{saved=localStorage.getItem('eventPosterLayout')||'1';}catch(e){}
+    if(!/^[123]$/.test(saved)) saved='1';
+    setLayout(saved);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+'''
+
+          # Insert the new controls before performer management, leaving existing controls intact.
+          if 'class="section"><h3>③ 출연자 관리' not in s:
+              raise SystemExit('performer section marker not found')
+          s=s.replace('<div class="section"><h3>③ 출연자 관리', html+'<div class="section"><h3>③ 출연자 관리',1)
+          s=s.replace('</style>',css+'</style>',1)
+          s=s.replace('</body>',marker+script+'</body>',1)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m '포스터 1 2 3 디자인 형식 전환 추가' || exit 0
+          git push
