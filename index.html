@@ -223,5 +223,29 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
   setTimeout(clean,100);setTimeout(clean,500);setTimeout(clean,1500);
 })();
 </script>
-\n<!-- PHOTO-UPLOAD-FIX -->\n<script>\n(function(){\n  document.addEventListener('change', function(e){\n    var input=e.target;\n    if(!input || !input.matches('#performers input[type="file"]')) return;\n    var files=Array.from(document.querySelectorAll('#performers .performer input[type="file"]'));\n    var index=files.indexOf(input);\n    var p=typeof performers!=='undefined' ? performers[index] : null;\n    var f=input.files && input.files[0];\n    if(!p || !f) return;\n    if(!/^image\\//i.test(f.type)){ alert('JPG, PNG, WEBP 같은 이미지 파일을 선택해 주세요.'); input.value=''; return; }\n    var reader=new FileReader();\n    reader.onload=function(ev){\n      var img=new Image();\n      img.onload=function(){\n        var max=1400, scale=Math.min(1,max/Math.max(img.width,img.height));\n        var w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));\n        var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;\n        var ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);\n        p.src=canvas.toDataURL('image/jpeg',0.88);\n        if(typeof renderPerformers==='function') renderPerformers();\n        if(typeof renderPoster==='function') renderPoster();\n      };\n      img.onerror=function(){alert('이 사진 형식은 브라우저에서 읽을 수 없습니다. JPG 또는 PNG로 저장한 뒤 다시 선택해 주세요.');};\n      img.src=ev.target.result;\n    };\n    reader.onerror=function(){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');};\n    reader.readAsDataURL(f);\n  }, true);\n})();\n</script>\n</body>
+\n<!-- PHOTO-UPLOAD-FIX -->\n<script>\n(function(){\n  document.addEventListener('change', function(e){\n    var input=e.target;\n    if(!input || !input.matches('#performers input[type="file"]')) return;\n    var files=Array.from(document.querySelectorAll('#performers .performer input[type="file"]'));\n    var index=files.indexOf(input);\n    var p=typeof performers!=='undefined' ? performers[index] : null;\n    var f=input.files && input.files[0];\n    if(!p || !f) return;\n    if(!/^image\\//i.test(f.type)){ alert('JPG, PNG, WEBP 같은 이미지 파일을 선택해 주세요.'); input.value=''; return; }\n    var reader=new FileReader();\n    reader.onload=function(ev){\n      var img=new Image();\n      img.onload=function(){\n        var max=1400, scale=Math.min(1,max/Math.max(img.width,img.height));\n        var w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));\n        var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;\n        var ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);\n        p.src=canvas.toDataURL('image/jpeg',0.88);\n        if(typeof renderPerformers==='function') renderPerformers();\n        if(typeof renderPoster==='function') renderPoster();\n      };\n      img.onerror=function(){alert('이 사진 형식은 브라우저에서 읽을 수 없습니다. JPG 또는 PNG로 저장한 뒤 다시 선택해 주세요.');};\n      img.src=ev.target.result;\n    };\n    reader.onerror=function(){alert('사진을 읽지 못했습니다. 다시 선택해 주세요.');};\n    reader.readAsDataURL(f);\n  }, true);\n})();\n</script>\n<!-- PHOTO-UPLOAD-FIX-FINAL -->
+<script>
+(function(){
+  document.addEventListener('change', function(e){
+    const input=e.target;
+    if(!input || !input.matches('#performers input[type="file"]')) return;
+    const card=input.closest('.performer');
+    const cards=[...document.querySelectorAll('#performers .performer')];
+    const idx=cards.indexOf(card);
+    const p=(typeof performers!=='undefined') ? performers[idx] : null;
+    const f=input.files && input.files[0];
+    if(!p || !f) return;
+    if(!f.type || !f.type.startsWith('image/')){ alert('이미지 파일을 선택해 주세요.'); return; }
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      p.src=ev.target.result;
+      if(typeof renderPerformers==='function') renderPerformers();
+      if(typeof renderPoster==='function') renderPoster();
+    };
+    reader.onerror=function(){ alert('사진을 읽지 못했습니다. 다시 선택해 주세요.'); };
+    reader.readAsDataURL(f);
+  }, true);
+})();
+</script>
+</body>
 </html>
