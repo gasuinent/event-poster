@@ -195,5 +195,48 @@ renderCats();render();updateText();addPerformer();
   else bindPosterControls();
 })();
 </script>
+<script>
+(function(){
+  function bindPosterControls(){
+    const preview=document.getElementById('previewBtn');
+    const download=document.getElementById('downloadBtn');
+    const apply=document.getElementById('applyBtn');
+    if(preview){
+      preview.onclick=function(){
+        if(apply) apply.click();
+        const poster=document.querySelector('.poster');
+        if(poster) poster.scrollIntoView({behavior:'smooth',block:'center'});
+      };
+    }
+    if(download){
+      download.onclick=async function(){
+        const poster=document.querySelector('.poster');
+        if(!poster) return;
+        const old=download.textContent;
+        download.textContent='⏳ 다운로드 준비 중...';
+        download.disabled=true;
+        try{
+          if(typeof window.html2canvas!=='function') throw new Error('html2canvas unavailable');
+          const canvas=await window.html2canvas(poster,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});
+          const link=document.createElement('a');
+          link.download='행사포스터.png';
+          link.href=canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }catch(err){
+          console.error(err);
+          alert('포스터 PNG 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        }finally{
+          download.textContent=old;
+          download.disabled=false;
+        }
+      };
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindPosterControls);
+  else bindPosterControls();
+})();
+</script>
 </body>
 </html>
