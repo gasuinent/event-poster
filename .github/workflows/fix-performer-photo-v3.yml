@@ -1,8 +1,7 @@
 name: Fix performer photo fill
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 permissions:
   contents: write
 jobs:
@@ -11,12 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Repair main artist display
-        run: python3 -c "from pathlib import Path; p=Path('index.html'); s=p.read_text(encoding='utf-8'); old=\"const ma=$('mainArtist');if(ma)ma.style.display='none';\"; new=\"const main=performers.find(p=>p.main);const ma=$('mainArtist');if(ma){if(main){const img=$('mainImg');const label=$('mainLabel');label.textContent=main.text||'메인가수';if(main.src){img.src=main.src;img.style.display='block';ma.style.display='block';}else{img.removeAttribute('src');img.style.display='none';ma.style.display='block';}}else{ma.style.display='none';}}\"; s=s.replace(old,new,1); t=Path('.github/workflows/repair-main-artist.yml'); t.unlink(missing_ok=True); p.write_text(s,encoding='utf-8')"
+        run: |
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgnaW5kZXguaHRtbCcpCnM9cC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKb2xkPSJjb25zdCBtYT0kKCdtYWluQXJ0aXN0Jyk7aWYobWEpbWEuc3R5bGUuZGlzcGxheT0nbm9uZSc7IgpuZXc9ImNvbnN0IG1haW49cGVyZm9ybWVycy5maW5kKHA9PnAubWFpbik7Y29uc3QgbWE9JCgnbWFpbkFydGlzdCcpO2lmKG1hKXtpZihtYWluKXtjb25zdCBpbWc9JCgnbWFpbkltZycpO2NvbnN0IGxhYmVsPSQoJ21haW5MYWJlbCcpO2xhYmVsLnRleHRDb250ZW50PW1haW4udGV4dHx8J+uplOyduOqwgOyImCc7aWYobWFpbi5zcmMpe2ltZy5zcmM9bWFpbi5zcmM7aW1nLnN0eWxlLmRpc3BsYXk9J2Jsb2NrJzttYS5zdHlsZS5kaXNwbGF5PSdibG9jayc7fWVsc2V7aW1nLnJlbW92ZUF0dHJpYnV0ZSgnc3JjJyk7aW1nLnN0eWxlLmRpc3BsYXk9J25vbmUnO21hLnN0eWxlLmRpc3BsYXk9J2Jsb2NrJzt9fWVsc2V7bWEuc3R5bGUuZGlzcGxheT0nbm9uZSc7fX0iCmlmIG9sZCBub3QgaW4gczoKICAgIHJhaXNlIFN5c3RlbUV4aXQoJ3RhcmdldCBub3QgZm91bmQnKQpwLndyaXRlX3RleHQocy5yZXBsYWNlKG9sZCxuZXcsMSksZW5jb2Rpbmc9J3V0Zi04JykK' | base64 -d | python3
       - name: Commit repair
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html .github/workflows/repair-main-artist.yml
+          git add index.html
           if git diff --cached --quiet; then exit 0; fi
           git commit -m '메인가수 표시 복구'
           git push
