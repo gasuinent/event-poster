@@ -15,7 +15,7 @@ body{margin:0;background:#05080e;color:#fff;font-family:Arial,"Noto Sans KR",san
 .form{display:grid;gap:8px}.form input,.form select{width:100%;padding:10px;border:1px solid #3c4c65;border-radius:6px;background:#0a1424;color:#fff;font-size:12px}.form textarea{min-height:55px;resize:vertical}.form input[type=date]{color-scheme:dark}
 .fieldLabel{display:block;color:#ffd21c;font-size:12px;font-weight:900;margin-top:2px;margin-bottom:-2px}.dateFields{display:grid;grid-template-columns:1.45fr 1fr;gap:8px}
 .cats{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.cat{border:1px solid #40506a;background:#172235;color:#dce5f2;border-radius:20px;padding:7px 10px;font-size:11px;cursor:pointer}.cat.active{background:#ffd21c;color:#111;border-color:#ffd21c;font-weight:900}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{border:2px solid #34445c;border-radius:8px;overflow:hidden;cursor:pointer;background:#172235}.card.active{border-color:#ffd21c;box-shadow:0 0 0 1px #ffd21c}.card img{width:100%;height:110px;object-fit:cover;display:block}.card b{display:block;padding:8px;text-align:center;font-size:11px}
+.grid{display:none;grid-template-columns:1fr 1fr;gap:10px}.card{border:2px solid #34445c;border-radius:8px;overflow:hidden;cursor:pointer;background:#172235}.card.active{border-color:#ffd21c;box-shadow:0 0 0 1px #ffd21c}.card img{width:100%;height:110px;object-fit:cover;display:block}.card b{display:block;padding:8px;text-align:center;font-size:11px}
 .apply{width:100%;margin-top:12px;padding:14px;border:0;border-radius:7px;background:#1877d8;color:#fff;font-weight:900;cursor:pointer}.status{margin-top:8px;color:#ffd21c;font-size:12px}
 .add{width:100%;padding:11px;border:1px solid #ffd21c;border-radius:7px;background:#18243a;color:#ffd21c;font-weight:900;cursor:pointer;margin-bottom:10px}
 .performer{padding:10px;border:1px solid #33445f;border-radius:8px;background:#0c1627;margin-bottom:8px}.performerTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:11px;color:#dfe7f2}.remove{border:0;background:#7d1f2a;color:#fff;border-radius:5px;padding:5px 8px;cursor:pointer}.performer input[type=text]{margin-bottom:6px}.performer input[type=file]{font-size:10px}.mainpick{font-size:10px;color:#ffd21c;display:flex;align-items:center;gap:5px;margin-top:7px}.thumb{width:55px;height:55px;object-fit:cover;border-radius:5px;border:1px solid #555;margin-top:6px;display:none}
@@ -112,7 +112,7 @@ const D=[
 ['general','일반행사','🎉 기념행사 · 축하무대 · 관객','https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=80']
 ];
 const C=[['all','전체'],['night','🌙 야시장'],['concert','🎤 공연'],['festival','🎉 축제'],['sports','🏃 체육대회'],['golf','⛳ 골프대회'],['local','🌶️ 지역특산물'],['market','🛍️ 시장행사'],['general','✨ 일반행사']];
-let category='all',sel=null,performers=[];
+let category='all',sel=null,performers=[],externalBg=null;
 const $=id=>document.getElementById(id),grid=$('grid'),cats=$('cats'),bg=$('bg');
 function selectedValue(id,customId){const v=$(id).value;return v==='직접 입력'?$(customId).value:v}
 function escapeHtml(s){return s.replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
@@ -127,9 +127,9 @@ const rows=[];rows.push('<div class="infoRow"><span class="infoIcon">📅</span>
 $('posterFooter').innerHTML=$('bottomMsg1').value?'<span class="star">☆</span>'+escapeHtml($('bottomMsg1').value)+'<span class="music">♪</span>':'';$('infoInvite').innerHTML=formatInvite($('bottomMsg2').value);
 }
 function toggleCustom(id,customId){$(customId).style.display=$(id).value==='직접 입력'?'block':'none';updateText()}
-function renderCats(){cats.innerHTML='';C.forEach(x=>{const b=document.createElement('button');b.className='cat'+(category===x[0]?' active':'');b.textContent=x[1];b.onclick=()=>{category=x[0];renderCats();render()};cats.appendChild(b)})}
+function renderCats(){cats.innerHTML='';C.forEach(x=>{const b=document.createElement('button');b.className='cat'+(category===x[0]?' active':'');b.textContent=x[1];b.onclick=()=>{category=x[0];grid.style.display='grid';renderCats();render()};cats.appendChild(b)})}
 function render(){grid.innerHTML='';D.filter(x=>category==='all'||x[0]===category).forEach(x=>{const c=document.createElement('div');c.className='card'+(sel===x[2]?' active':'');c.innerHTML='<img src="'+x[3]+'"><b>'+x[2]+'</b>';c.onclick=()=>{sel=x[2];render();apply()};grid.appendChild(c)})}
-function apply(){if(!sel)return;const x=D.find(v=>v[2]===sel);bg.src=x[3];$('status').textContent='현재 적용: '+x[2];$('mark').textContent='적용됨: '+x[2]}
+function apply(){if(!sel)return;const x=D.find(v=>v[2]===sel);externalBg=null;bg.src=x[3];$('status').textContent='현재 적용: '+x[2];$('mark').textContent='적용됨: '+x[2]}
 function addPerformer(){performers.push({id:Date.now()+Math.random(),text:'',src:'',main:performers.length===0});renderPerformers()}
 function removePerformer(id){performers=performers.filter(p=>p.id!==id);if(performers.length&&!performers.some(p=>p.main))performers[0].main=true;renderPerformers()}
 function renderPerformers(){const box=$('performers');box.innerHTML='';performers.forEach((p,i)=>{const el=document.createElement('div');el.className='performer';el.innerHTML='<div class="performerTop"><b>출연자 '+(i+1)+'</b><button class="remove" type="button">삭제</button></div><input type="text" placeholder="가수 이명로" value="'+escapeHtml(p.text)+'"><input type="file" accept="image/*"><label class="mainpick"><input type="radio" name="mainArtist" '+(p.main?'checked':'')+'> 메인 표시</label><img class="thumb" '+(p.src?'src="'+p.src+'" style="display:block"':'')+'>';const text=el.querySelector('input[type=text]');text.oninput=e=>{p.text=e.target.value;renderPoster()};el.querySelector('.remove').onclick=()=>removePerformer(p.id);el.querySelector('input[type=file]').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{p.src=r.result;renderPerformers();renderPoster()};r.readAsDataURL(f)};el.querySelector('input[type=radio]').onchange=()=>{performers.forEach(q=>q.main=false);p.main=true;renderPerformers();renderPoster()};box.appendChild(el)});renderPoster()}
@@ -142,7 +142,7 @@ $('host').onchange=()=>toggleCustom('host','hostCustom');$('organizer').onchange
 $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').value='많은 관심과 참여 부탁드립니다!';renderCats();render();updateText();addPerformer();
 </script>
 <script>
-(function(){function bindPosterControls(){const preview=document.getElementById('previewBtn');const download=document.getElementById('downloadBtn');const apply=document.getElementById('applyBtn');if(preview){preview.onclick=function(){if(apply)apply.click();const poster=document.querySelector('.poster');if(poster)poster.scrollIntoView({behavior:'smooth',block:'center'})}}if(download){download.onclick=async function(){const poster=document.querySelector('.poster');if(!poster)return;const old=download.textContent;download.textContent='⏳ 다운로드 준비 중...';download.disabled=true;try{if(typeof window.html2canvas!=='function')throw new Error('html2canvas unavailable');const canvas=await window.html2canvas(poster,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});const link=document.createElement('a');link.download='행사포스터.png';link.href=canvas.toDataURL('image/png');document.body.appendChild(link);link.click();link.remove()}catch(err){console.error(err);alert('포스터 PNG 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.')}finally{download.textContent=old;download.disabled=false}}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindPosterControls);else bindPosterControls()})();
+(function(){function bindPosterControls(){const preview=document.getElementById('previewBtn');const download=document.getElementById('downloadBtn');const apply=document.getElementById('applyBtn');if(preview){preview.onclick=function(){const poster=document.querySelector('.poster');if(poster)poster.scrollIntoView({behavior:'smooth',block:'center'})}}if(download){download.onclick=async function(){const poster=document.querySelector('.poster');if(!poster)return;const old=download.textContent;download.textContent='⏳ 다운로드 준비 중...';download.disabled=true;try{if(typeof window.html2canvas!=='function')throw new Error('html2canvas unavailable');const canvas=await window.html2canvas(poster,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});const link=document.createElement('a');link.download='행사포스터.png';link.href=canvas.toDataURL('image/png');document.body.appendChild(link);link.click();link.remove()}catch(err){console.error(err);alert('포스터 PNG 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.')}finally{download.textContent=old;download.disabled=false}}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindPosterControls);else bindPosterControls()})();
 </script>
 <style>
 .artistCard img{object-fit:cover!important;object-position:center center!important;transform:none!important}
@@ -181,7 +181,8 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
       if(!f.type||!f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
       var r=new FileReader();
       r.onload=function(e){
-        var b=document.getElementById('bg');if(b)b.src=e.target.result;
+        var b=document.getElementById('bg');externalBg=e.target.result;
+        if(b)b.src=externalBg;
         var st=document.getElementById('status');if(st)st.textContent='현재 적용: 외부 파일 · '+f.name;
         var mark=document.getElementById('mark');if(mark)mark.textContent='외부 파일 적용됨';
       };
