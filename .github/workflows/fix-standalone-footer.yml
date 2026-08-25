@@ -1,0 +1,35 @@
+name: Fix standalone poster footer
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix-footer:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update only standalone footer
+        shell: python
+        run: |
+          from pathlib import Path
+          for fn in ['standalone/poster_format23_admin.html','standalone/poster_format_2_event.html','standalone/poster_format_2_event_v2.html','standalone/poster_format_2_event_v3.html','standalone/poster_format_3_festival.html']:
+              p=Path(fn)
+              if not p.exists():
+                  continue
+              s=p.read_text(encoding='utf-8')
+              s=s.replace('주최 · 주관 | '+"'+vals.host+' · '+vals.organizer", '주최 : '+"'+vals.host+'<br>주관 : '+vals.organizer")
+              s=s.replace('주최 · 주관 | '+"'+vals.host+' · '+vals.organizer", '주최 : '+"'+vals.host+'<br>주관 : '+vals.organizer")
+              s=s.replace('주최 · 주관　|　행사문의', '주최 : 울진군<br>주관 : 울진바지게시장 상인회　|　행사문의')
+              s=s.replace('주최 · 주관　|　문의', '주최 : 울진군<br>주관 : 울진바지게시장 상인회　|　문의')
+              s=s.replace('주최 · 주관　|　많은 관심과 참여 부탁드립니다!', '주최 : 울진군<br>주관 : 울진바지게시장 상인회<br>많은 관심과 참여 부탁드립니다!')
+              p.write_text(s,encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/
+          git commit -m '주최 주관 하단 표시를 1번 형식으로 변경' || exit 0
+          git push
