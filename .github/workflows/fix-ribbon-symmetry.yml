@@ -6,32 +6,26 @@ permissions:
   contents: write
 jobs:
   fix:
-    if: ${{ !contains(github.event.head_commit.message, '중앙 리본 좌우 대칭 완료') }}
+    if: ${{ !contains(github.event.head_commit.message, '리본 꼬리 방향 수정 완료') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix central ribbon
+      - name: Reverse ribbon tail direction
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           p=Path('standalone/poster_format23_admin_v5.html')
           s=p.read_text(encoding='utf-8')
-          pattern=r'\.ribbon\{.*?\}\.ribbon:before,\.ribbon:after\{.*?\}\.ribbon:before\{.*?\}\.ribbon:after\{.*?\}'
-          replacement='''.ribbon{position:relative;display:block;width:78%;margin:15px auto 14px;background:#c71919;border:2px solid #ffd21c;padding:11px 28px;font-size:14px;font-weight:900;line-height:1.25;z-index:1;box-shadow:0 4px 8px rgba(0,0,0,.45);text-align:center}.ribbon:before,.ribbon:after{content:"";position:absolute;top:-2px;width:58px;height:calc(100% + 4px);background:#c71919;border:2px solid #ffd21c;z-index:-1}.ribbon:before{left:-54px;clip-path:polygon(100% 0,0 0,25% 50%,0 100%,100% 100%)}.ribbon:after{right:-54px;clip-path:polygon(0 0,100% 0,75% 50%,100% 100%,0 100%)}'''
-          s2,n=re.subn(pattern,replacement,s,count=1,flags=re.S)
-          if n!=1: raise SystemExit('ribbon block not found')
-          p.write_text(s2,encoding='utf-8')
+          old='.ribbon:before{left:-61px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,25% 50%)}.ribbon:after{right:-61px;clip-path:polygon(0 0,100% 0,75% 50%,100% 100%,0 100%)}'
+          new='.ribbon:before{left:-61px;transform:rotate(180deg);clip-path:polygon(0 0,100% 0,100% 100%,0 100%,25% 50%)}.ribbon:after{right:-61px;transform:rotate(180deg);clip-path:polygon(0 0,100% 0,75% 50%,100% 100%,0 100%)}'
+          if old not in s:
+              raise SystemExit('현재 리본 CSS를 찾지 못했습니다.')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
           PY
       - name: Commit fixed HTML
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add standalone/poster_format23_admin_v5.html
-          git commit -m '중앙 리본 좌우 대칭 완료'
-          git push
-      - name: Remove helper workflow
-        run: |
-          git rm .github/workflows/fix-ribbon-symmetry.yml
-          git commit -m '리본 수정 보조 작업 정리'
+          git commit -m '리본 꼬리 방향 수정 완료'
           git push
