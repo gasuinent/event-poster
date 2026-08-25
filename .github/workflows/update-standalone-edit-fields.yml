@@ -1,0 +1,43 @@
+name: Update standalone edit fields
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  update:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add editable date time and four festival cards
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('<div class="row"><input id="date" value="2026. 8. 29.(토) – 30.(일)" placeholder="날짜"><input id="time" value="개막식 8.29.(토) 19:00" placeholder="시간"></div>', '<div class="row"><div><label class="label">날짜</label><input id="date" type="date" value="2026-08-29"></div><div><label class="label">시간</label><input id="time" type="time" value="19:00"></div></div><input id="dateText" value="" placeholder="날짜에 표시할 추가 문구 (예: 8.29.(토) – 30.(일))"><input id="timeText" value="" placeholder="시간에 표시할 문구 (예: 개막식 19:00 ~ 22:00)">')
+          old='<textarea id="cardText" placeholder="축제형 하단 4개 카드 내용">맛있는 먹거리|지역농산물 판매|다양한 먹거리|신나는 공연|주민공연|초청공연|즐길거리 가득|플리마켓|체험부스|특별 이벤트|상품권 증정|현장 참여</textarea>'
+          new='''<div class="festivalCardsEdit"><label class="label">축제형 하단 4개 칸</label><p class="hint">제목은 포스터의 바에 들어갑니다. 제목과 아래 내용 모두 직접 수정할 수 있습니다.</p><div class="cardEdit"><input id="c1t" value="맛있는 먹거리"><textarea id="c1b">지역농산물 판매\n다양한 먹거리</textarea></div><div class="cardEdit"><input id="c2t" value="신나는 공연"><textarea id="c2b">주민공연\n초청공연</textarea></div><div class="cardEdit"><input id="c3t" value="즐길거리 가득"><textarea id="c3b">플리마켓\n체험부스</textarea></div><div class="cardEdit"><input id="c4t" value="특별 이벤트"><textarea id="c4b">상품권 증정\n현장 참여</textarea></div></div>'''
+          s=s.replace(old,new)
+          css='''<style id="editableCardCSS">.festivalCardsEdit{display:grid;gap:6px}.cardEdit{padding:7px;border:1px solid #33445f;border-radius:6px;background:#0b1627}.cardEdit input,.cardEdit textarea{margin-bottom:4px}.cardEdit textarea{min-height:48px}</style>'''
+          s=s.replace('</style>',css+'</style>',1)
+          oldjs="let vals=['top','title','hi','date','time','venue','host','organizer','sub'].reduce((o,k)=>(o[k]=$(k).value,o),{});"
+          newjs="let vals=['top','title','hi','date','time','dateText','timeText','venue','host','organizer','sub','c1t','c1b','c2t','c2b','c3t','c3b','c4t','c4b'].reduce((o,k)=>(o[k]=$(k)?.value||'',o),{}); let dateDisplay=vals.dateText||vals.date; let timeDisplay=vals.timeText||vals.time;"
+          s=s.replace(oldjs,newjs)
+          s=s.replace("$('vdate').textContent=vals.date;", "$('vdate').textContent=dateDisplay+' · '+timeDisplay;")
+          s=s.replace("$('vtime').textContent=vals.time;", "$('vtime').textContent=timeDisplay;")
+          s=s.replace("$('vdate3').textContent=vals.date+' · '+vals.time;", "$('vdate3').textContent=dateDisplay+' · '+timeDisplay;")
+          oldcards="let parts=$('cardText').value.split('|');let cards=[];for(let i=0;i<parts.length;i+=3){cards.push(`<div class=\"card\"><h4>${esc(parts[i])}</h4><p>${esc(parts[i+1]||'')}</p><p>${esc(parts[i+2]||'')}</p></div>`)}$('cards').innerHTML=cards.join('');"
+          newcards="let cards=[['c1t','c1b'],['c2t','c2b'],['c3t','c3b'],['c4t','c4b']].map(x=>{let lines=($(x[1]).value||'').split('\\n');return `<div class=\"card\"><h4>${esc($(x[0]).value)}</h4>`+lines.map(t=>`<p>${esc(t)}</p>`).join('')+`</div>`}).join('');$('cards').innerHTML=cards;"
+          s=s.replace(oldcards,newcards)
+          s=s.replace("document.querySelectorAll('input,textarea').forEach(el=>el.addEventListener('input',render));", "document.querySelectorAll('input,textarea').forEach(el=>el.addEventListener('input',render));document.querySelectorAll('input[type=date],input[type=time]').forEach(el=>el.addEventListener('change',render));")
+          p.write_text(s,encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin.html
+          git commit -m '날짜 시간 달력 입력 및 축제 카드 개별 편집' || exit 0
+          git push
