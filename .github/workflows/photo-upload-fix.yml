@@ -8,21 +8,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch index
+      - name: Clean and patch index
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
 
-          # 기존에 여러 번 들어간 사진 업로드 이벤트를 제거해 중복 실행을 막습니다.
-          s = re.sub(r'\s*<!-- PHOTO-UPLOAD-FIX -->.*?<!-- PHOTO-UPLOAD-FIX-FINAL -->\s*<script>.*?</script>', '', s, flags=re.S)
+          # Remove all old photo-upload patches.
+          s=re.sub(r'\s*<!-- PHOTO-UPLOAD-FIX -->.*?(?:<!-- PHOTO-UPLOAD-FIX-FINAL -->\s*<script>.*?</script>)?', '', s, flags=re.S)
+          # Remove the obsolete main-artist override/filter patches; the original renderPoster already excludes the main artist.
+          s=re.sub(r'\s*<!-- MAIN-ARTIST-EXCLUDE-PATCH -->.*?<!-- MAIN-ARTIST-DOM-FILTER -->\s*<script>.*?</script>', '', s, flags=re.S)
+          # Remove all copies of the previous final patch.
+          s=re.sub(r'\s*<style id="FINAL-POSTER-FIX-V2">.*?</script>', '', s, flags=re.S)
 
-          marker = '<!-- FINAL-POSTER-FIX-V2 -->'
+          marker='<!-- FINAL-POSTER-FIX-V3 -->'
           if marker not in s:
-              patch = r'''
-          <style id="FINAL-POSTER-FIX-V2">
+              patch=r'''
+          <style id="FINAL-POSTER-FIX-V3">
           .infoInvite{width:190px!important;right:2px!important;font-size:16px!important;line-height:1.28!important;}
           .infoInvite .accent{font-size:22px!important;margin:1px 2px!important;}
           .backgroundActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:12px!important;}
@@ -35,40 +39,39 @@ jobs:
           (function(){
             function setupBackground(){
               var apply=document.getElementById('applyBtn');
-              if(!apply || document.getElementById('externalBgBtn')) return;
+              if(!apply || document.getElementById('externalBgBtn'))return;
               var parent=apply.parentNode;
               var actions=document.createElement('div');
               actions.className='backgroundActions';
               parent.insertBefore(actions,apply);
               actions.appendChild(apply);
               var btn=document.createElement('button');
-              btn.id='externalBgBtn'; btn.type='button'; btn.className='externalBgBtn';
+              btn.id='externalBgBtn';btn.type='button';btn.className='externalBgBtn';
               btn.textContent='📁 외부 파일 불러오기';
               actions.appendChild(btn);
               var input=document.createElement('input');
-              input.id='externalBgInput'; input.type='file'; input.accept='image/*';
+              input.id='externalBgInput';input.type='file';input.accept='image/*';
               parent.insertBefore(input,actions.nextSibling);
               btn.onclick=function(){input.click()};
               input.onchange=function(){
-                var f=input.files&&input.files[0]; if(!f)return;
-                if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
+                var f=input.files&&input.files[0];if(!f)return;
+                if(!f.type||!f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
                 var r=new FileReader();
                 r.onload=function(e){
-                  var b=document.getElementById('bg'); if(b)b.src=e.target.result;
-                  var st=document.getElementById('status'); if(st)st.textContent='현재 적용: 외부 파일 · '+f.name;
-                  var mark=document.getElementById('mark'); if(mark)mark.textContent='외부 파일 적용됨';
+                  var b=document.getElementById('bg');if(b)b.src=e.target.result;
+                  var st=document.getElementById('status');if(st)st.textContent='현재 적용: 외부 파일 · '+f.name;
+                  var mark=document.getElementById('mark');if(mark)mark.textContent='외부 파일 적용됨';
                 };
                 r.onerror=function(){alert('외부 이미지 파일을 읽지 못했습니다. 다시 선택해 주세요.');};
                 r.readAsDataURL(f);
               };
             }
-
             function setupPhoto(){
               if(window.__FINAL_PHOTO_HANDLER__)return;
               window.__FINAL_PHOTO_HANDLER__=true;
               document.addEventListener('change',function(e){
                 var input=e.target;
-                if(!input || !input.matches('#performers input[type="file"]'))return;
+                if(!input||!input.matches('#performers input[type="file"]'))return;
                 e.stopImmediatePropagation();
                 var card=input.closest('.performer');
                 var cards=Array.prototype.slice.call(document.querySelectorAll('#performers .performer'));
@@ -76,7 +79,7 @@ jobs:
                 var p=(typeof performers!=='undefined')?performers[idx]:null;
                 var f=input.files&&input.files[0];
                 if(!p||!f)return;
-                if(!f.type || !f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
+                if(!f.type||!f.type.startsWith('image/')){alert('JPG, PNG, WEBP 등의 이미지 파일을 선택해 주세요.');input.value='';return;}
                 var reader=new FileReader();
                 reader.onload=function(ev){
                   p.src=ev.target.result;
@@ -86,10 +89,7 @@ jobs:
                   var mainImg=document.getElementById('mainImg');
                   var label=document.getElementById('mainLabel');
                   if(p.main){
-                    mainImg.src=p.src;
-                    mainImg.style.display='block';
-                    main.style.display='block';
-                    label.textContent=p.text||'메인가수';
+                    mainImg.src=p.src;mainImg.style.display='block';main.style.display='block';label.textContent=p.text||'메인가수';
                   }else if(typeof renderPoster==='function'){
                     renderPoster();
                   }
@@ -98,20 +98,19 @@ jobs:
                 reader.readAsDataURL(f);
               },true);
             }
-
             function setup(){setupBackground();setupPhoto();}
             if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
           })();
           </script>
+          <!-- FINAL-POSTER-FIX-V3 -->
           '''
-              s=s.replace('</body>', patch+'</body>', 1)
-
-          p.write_text(s, encoding='utf-8')
+              s=s.replace('</body>',patch+'</body>',1)
+          p.write_text(s,encoding='utf-8')
           PY
       - name: Commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m '최종 사진 적용 및 외부 배경 기능 수정' || exit 0
+          git commit -m 'Clean duplicate poster fixes' || exit 0
           git push
