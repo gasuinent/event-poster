@@ -1,0 +1,32 @@
+name: Fix ribbon symmetry
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '나비넥타이 좌우 대칭 수정 완료') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix CSS
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin_v5.html')
+          s=p.read_text(encoding='utf-8')
+          old='.ribbon{position:relative;display:block;width:84%;margin:15px auto 14px;background:#c61c1c;border:2px solid #ffbd24;padding:11px 28px;font-size:14px;font-weight:900;line-height:1.25;z-index:1;box-shadow:0 4px 8px rgba(0,0,0,.45)}.ribbon:before,.ribbon:after{content:"";position:absolute;top:5px;width:52px;height:calc(100% - 10px);background:#a91414;border:2px solid #ffbd24;z-index:-1}.ribbon:before{left:-38px;clip-path:polygon(0 0,100% 0,78% 50%,100% 100%,0 100%,15% 50%)}.ribbon:after{right:-38px;clip-path:polygon(0 0,100% 0,85% 50%,100% 100%,0 100%,22% 50%)}'
+          new='.ribbon{position:relative;display:block;width:84%;margin:15px auto 14px;background:#c61c1c;border:2px solid #ffbd24;padding:11px 28px;font-size:14px;font-weight:900;line-height:1.25;z-index:1;box-shadow:0 4px 8px rgba(0,0,0,.45)}.ribbon:before,.ribbon:after{content:"";position:absolute;top:3px;width:58px;height:calc(100% - 6px);background:#a91414;border:2px solid #ffbd24;z-index:-1}.ribbon:before{left:-44px;clip-path:polygon(0 0,100% 0,78% 50%,100% 100%,0 100%,18% 50%)}.ribbon:after{right:-44px;clip-path:polygon(0 0,100% 0,82% 50%,100% 100%,0 100%,22% 50%)}'
+          if old not in s: raise SystemExit('old ribbon CSS not found')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+      - name: Commit and remove helper
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin_v5.html .github/workflows/fix-ribbon-symmetry.yml
+          git commit -m '나비넥타이 좌우 대칭 수정 완료'
+          git rm .github/workflows/fix-ribbon-symmetry.yml
+          git commit -m '나비넥타이 수정 작업 파일 정리'
+          git push
