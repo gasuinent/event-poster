@@ -1,0 +1,31 @@
+name: One performer default
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-performer-default.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Change only performer initial count
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("for(let i=0;i<7;i++)$('add').click();", "$('add').click();")
+          s=s.replace("<h3>③ 출연자 관리 (최대 7명)</h3>", "<h3>③ 출연자 관리 (최대 7명 · 한 사람씩 추가)</h3>")
+          p.write_text(s,encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin.html
+          git commit -m '출연자 1명 시작 및 한 사람씩 추가' || exit 0
+          git push
