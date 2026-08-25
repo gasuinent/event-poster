@@ -147,5 +147,35 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
 <style>
 .artistCard img{object-fit:cover!important;object-position:center center!important;transform:none!important}
 </style>
+
+<!-- MAIN-ARTIST-EXCLUDE-PATCH -->
+<script>
+(function(){
+  const originalRenderPoster = window.renderPoster;
+  if(typeof originalRenderPoster !== 'function') return;
+  window.renderPoster = function(){
+    const grid = document.getElementById('artistGrid');
+    if(!grid) return originalRenderPoster();
+    grid.innerHTML='';
+    window.performers.filter(p=>!p.main).forEach(p=>{
+      const c=document.createElement('div');
+      c.className='artistCard';
+      c.innerHTML=(p.src?'<img src="'+p.src+'">':'<div style="height:50px;background:#151515"></div>')+'<div class="name">'+(window.escapeHtml?window.escapeHtml(p.text||'출연가수'):(p.text||'출연가수'))+'</div>';
+      grid.appendChild(c);
+    });
+    const main=window.performers.find(p=>p.main);
+    const ma=document.getElementById('mainArtist');
+    if(ma){
+      if(main){
+        const img=document.getElementById('mainImg');
+        const label=document.getElementById('mainLabel');
+        label.textContent=main.text||'메인가수';
+        if(main.src){img.src=main.src;img.style.display='block';ma.style.display='block';}
+        else{img.removeAttribute('src');img.style.display='none';ma.style.display='block';}
+      }else{ma.style.display='none';}
+    }
+  };
+})();
+</script>
 </body>
 </html>
