@@ -1,0 +1,36 @@
+name: Fix main artist duplicate
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add main artist exclusion patch
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '<!-- MAIN-ARTIST-EXCLUDE-PATCH -->'
+          if marker not in s:
+              patch = '''\n<!-- MAIN-ARTIST-EXCLUDE-PATCH -->\n<script>\n(function(){\n  const originalRenderPoster = window.renderPoster;\n  if(typeof originalRenderPoster !== 'function') return;\n  window.renderPoster = function(){\n    const grid = document.getElementById('artistGrid');\n    if(!grid) return originalRenderPoster();\n    grid.innerHTML='';\n    window.performers.filter(p=>!p.main).forEach(p=>{\n      const c=document.createElement('div');\n      c.className='artistCard';\n      c.innerHTML=(p.src?'<img src="'+p.src+'">':'<div style="height:50px;background:#151515"></div>')+'<div class="name">'+(window.escapeHtml?window.escapeHtml(p.text||'출연가수'):(p.text||'출연가수'))+'</div>';\n      grid.appendChild(c);\n    });\n    const main=window.performers.find(p=>p.main);\n    const ma=document.getElementById('mainArtist');\n    if(ma){\n      if(main){\n        const img=document.getElementById('mainImg');\n        const label=document.getElementById('mainLabel');\n        label.textContent=main.text||'메인가수';\n        if(main.src){img.src=main.src;img.style.display='block';ma.style.display='block';}\n        else{img.removeAttribute('src');img.style.display='none';ma.style.display='block';}\n      }else{ma.style.display='none';}\n    }\n  };\n})();\n</script>\n'''
+              if '</body>' not in s:
+                  raise SystemExit('body closing tag not found; no changes made')
+              s=s.replace('</body>',patch+'</body>',1)
+              p.write_text(s,encoding='utf-8')
+      - name: Commit patch and remove workflow
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .github/workflows/fix-main-artist-duplicate.yml
+          git rm .github/workflows/fix-main-artist-duplicate.yml
+          git commit -m 'Exclude main artist from performer cards'
+          git push
