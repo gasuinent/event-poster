@@ -1,0 +1,33 @@
+name: Fix external preview and hidden designs
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}', '.grid{display:none;grid-template-columns:1fr 1fr;gap:10px}')
+          s = s.replace("let category='all',sel=null,performers=[];", "let category='all',sel=null,performers=[],externalBg=null;")
+          s = s.replace("b.onclick=()=>{category=x[0];renderCats();render()}", "b.onclick=()=>{category=x[0];grid.style.display='grid';renderCats();render()}")
+          s = s.replace("function apply(){if(!sel)return;const x=D.find(v=>v[2]===sel);bg.src=x[3];$('status').textContent='현재 적용: '+x[2];$('mark').textContent='적용됨: '+x[2]}", "function apply(){if(!sel)return;const x=D.find(v=>v[2]===sel);externalBg=null;bg.src=x[3];$('status').textContent='현재 적용: '+x[2];$('mark').textContent='적용됨: '+x[2]}")
+          s = s.replace("if(b)b.src=e.target.result;\n        var st=document.getElementById('status');", "externalBg=e.target.result;\n        if(b)b.src=externalBg;\n        var st=document.getElementById('status');")
+          s = s.replace("if(apply)apply.click();const poster=document.querySelector('.poster');", "const poster=document.querySelector('.poster');")
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit patched index
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m '외부 배경 미리보기 유지 및 배경 디자인 접기' || exit 0
+          git push
