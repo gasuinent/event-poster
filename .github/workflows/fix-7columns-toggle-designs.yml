@@ -1,0 +1,36 @@
+name: Fix 7 columns and toggle designs
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch poster layout and design toggle
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old_grid = 'grid-template-columns:repeat(8,minmax(0,1fr))'
+          if old_grid in s:
+              s = s.replace(old_grid, 'grid-template-columns:repeat(7,minmax(0,1fr))', 1)
+          if "let category='all',sel=null,performers=[],externalBg=null;" in s and 'designOpen' not in s:
+              s = s.replace("let category='all',sel=null,performers=[],externalBg=null;", "let category='all',sel=null,performers=[],externalBg=null,designOpen=false;", 1)
+          old = "b.onclick=()=>{category=x[0];grid.style.display='grid';renderCats();render()}"
+          new = "b.onclick=()=>{if(category===x[0]&&designOpen){designOpen=false}else{category=x[0];designOpen=true}grid.style.display=designOpen?'grid':'none';renderCats();render()}"
+          if old in s:
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m '출연자 7열 및 배경 디자인 토글 적용' || exit 0
+          git push
