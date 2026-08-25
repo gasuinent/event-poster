@@ -23,13 +23,12 @@ body{margin:0;background:#05080e;color:#fff;font-family:Arial,"Noto Sans KR",san
 .txt{position:absolute;z-index:3;left:20px;right:20px;text-align:center;text-shadow:3px 4px 5px rgba(0,0,0,.9)}.t1{top:25px;color:#ffe27b;font-size:15px}.t2{top:72px;font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:64px;font-weight:400;letter-spacing:1px;color:#fff;line-height:1.05;-webkit-text-stroke:1px rgba(0,0,0,.35)}.t3{top:138px;font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:72px;font-weight:400;letter-spacing:2px;color:#ffd21c;line-height:1.02;-webkit-text-stroke:1px rgba(0,0,0,.35)}.place{top:215px;font-size:19px;font-weight:700}
 .performersTitle{position:absolute;z-index:4;left:40px;right:40px;top:455px;height:42px;background:#1f397d;border:1px solid #ffd21c;text-align:center;padding:10px;font-size:17px;font-weight:900}
 .artistArea{position:absolute;z-index:5;left:18px;right:18px;top:510px;bottom:190px;overflow:hidden}
-.artistGrid{position:absolute;left:0;right:0;top:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:108px;gap:6px;align-content:start}
-.artistCard{height:108px;background:rgba(0,0,0,.8);border:2px solid #ffd21c;min-width:0;text-align:center;overflow:hidden}.artistCard img{width:100%;height:82px;object-fit:cover!important;object-position:center!important;background:#111;display:block;padding:0}.artistCard .name{font-size:12px;padding:5px 3px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.artistGrid{position:absolute;left:0;right:0;top:0;bottom:0;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:82px;gap:4px;align-content:start}
+.artistCard{height:82px;background:rgba(0,0,0,.8);border:2px solid #ffd21c;min-width:0;text-align:center;overflow:hidden;display:flex;flex-direction:column}.artistCard img{width:100%;height:61px;min-height:61px;object-fit:cover;object-position:center;background:#111;display:block;padding:0;margin:0}.artistCard .name{height:17px;line-height:17px;padding:0 2px;font-size:9px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 0 17px}
 .mainArtist{position:absolute;z-index:7;right:18px;top:255px;width:145px;height:200px;border:3px solid #ffd21c;border-radius:80px 80px 20px 20px;overflow:hidden;background:rgba(0,0,0,.75);display:none}.mainArtist img{width:100%;height:100%;object-fit:cover}.mainLabel{position:absolute;left:0;right:0;bottom:0;background:rgba(7,16,30,.94);color:#ffd21c;border-top:1px solid #ffd21c;padding:6px 5px;font-size:12px;font-weight:900;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .info{position:absolute;z-index:9;left:20px;right:20px;bottom:20px;height:170px;padding:13px 18px;background:rgba(0,0,0,.9);line-height:1.2;font-size:14px;display:flex;flex-direction:column;justify-content:center;gap:5px;text-align:left;overflow:hidden}.info .infoRow{width:calc(100% - 175px)}.infoRow{display:flex;align-items:center;min-height:34px;border-bottom:1px solid rgba(255,255,255,.18)}.infoRow:last-child{border-bottom:0}.infoIcon{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:#ffd21c;color:#111;display:flex;align-items:center;justify-content:center;font-size:17px;margin-right:10px}.infoLabel{flex:0 0 54px;color:#ffd21c;font-weight:900;font-size:13px}.infoValue{flex:1;color:#fff;font-size:13px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25}.infoInvite{position:absolute;z-index:11;right:12px;bottom:62px;top:auto;width:160px;text-align:center;color:#fff;font-family:"Segoe Print","Comic Sans MS",cursive;font-size:17px;font-weight:700;line-height:1.35;text-shadow:1px 2px 4px #000;transform:rotate(-8deg)}.infoInvite .accent{display:inline-block;color:#ffd21c;font-size:23px;margin:2px 3px}.posterFooter{position:absolute;z-index:10;left:20px;right:20px;bottom:4px;height:32px;text-align:center;color:#fff;font-family:"Segoe Print","Comic Sans MS",cursive;font-size:15px;font-weight:700;text-shadow:1px 2px 4px #000;white-space:nowrap}.posterFooter .star{color:#ffd21c;font-size:22px;margin-right:8px}.posterFooter .music{color:#ffd21c;font-size:20px;margin-left:8px}.mark{position:absolute;z-index:10;left:10px;top:10px;color:#ffd21c;background:rgba(0,0,0,.82);border:1px solid #ffd21c;border-radius:4px;padding:5px;font-size:9px}
 .bottomFields{margin-top:8px;padding-top:8px;border-top:1px solid #30415b}.bottomFields label{display:block;color:#ffd21c;font-size:11px;font-weight:900;margin:3px 0}.bottomFields input{margin-bottom:5px}
 @media(max-width:850px){.wrap{display:block}.side{width:100%}.view{min-height:100vh}.poster{width:92vw;height:163.55vw;max-width:540px;max-height:960px}}
-
 .posterActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.previewBtn,.downloadBtn{padding:12px;border:1px solid #ffd21c;border-radius:7px;font-weight:900;cursor:pointer;font-size:12px}.previewBtn{background:#243f82;color:#fff}.downloadBtn{background:#ffd21c;color:#111}.previewBtn:hover,.downloadBtn:hover{filter:brightness(1.08)}
 </style>
 </head>
@@ -133,207 +132,20 @@ function render(){grid.innerHTML='';D.filter(x=>category==='all'||x[0]===categor
 function apply(){if(!sel)return;const x=D.find(v=>v[2]===sel);bg.src=x[3];$('status').textContent='현재 적용: '+x[2];$('mark').textContent='적용됨: '+x[2]}
 function addPerformer(){performers.push({id:Date.now()+Math.random(),text:'',src:'',main:performers.length===0});renderPerformers()}
 function removePerformer(id){performers=performers.filter(p=>p.id!==id);if(performers.length&&!performers.some(p=>p.main))performers[0].main=true;renderPerformers()}
-function renderPerformers(){
-const box=$('performers');box.innerHTML='';
-performers.forEach((p,i)=>{const el=document.createElement('div');el.className='performer';el.innerHTML='<div class="performerTop"><b>출연자 '+(i+1)+'</b><button class="remove" type="button">삭제</button></div><input type="text" placeholder="가수 이명로" value="'+escapeHtml(p.text)+'"><input type="file" accept="image/*"><label class="mainpick"><input type="radio" name="mainArtist" '+(p.main?'checked':'')+'> 메인 표시</label><img class="thumb" '+(p.src?'src="'+p.src+'" style="display:block"':'')+'>';
-const text=el.querySelector('input[type=text]');text.oninput=e=>{p.text=e.target.value;renderPoster()};el.querySelector('.remove').onclick=()=>removePerformer(p.id);el.querySelector('input[type=file]').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{p.src=r.result;renderPerformers();renderPoster()};r.readAsDataURL(f)};el.querySelector('input[type=radio]').onchange=()=>{performers.forEach(q=>q.main=false);p.main=true;renderPerformers();renderPoster()};box.appendChild(el)})
-renderPoster()
-}
-function renderPoster(){
-const g=$('artistGrid');
-g.innerHTML='';
-performers.forEach(p=>{
-const c=document.createElement('div');
-c.className='artistCard';
-c.innerHTML=(p.src?'<img src="'+p.src+'">':'<div style="height:50px;background:#151515"></div>')+'<div class="name">'+escapeHtml(p.text||'출연가수')+'</div>';
-g.appendChild(c);
-});
-
-/* 메인가수 표시 유지 */
-const main=performers.find(p=>p.main);
-const ma=$('mainArtist');
-if(ma){
-  if(main){
-    const img=$('mainImg');
-    const label=$('mainLabel');
-    label.textContent=main.text||'메인가수';
-    if(main.src){
-      img.src=main.src;
-      img.style.display='block';
-      ma.style.display='block';
-    }else{
-      img.removeAttribute('src');
-      img.style.display='none';
-      ma.style.display='block';
-    }
-  }else{
-    ma.style.display='none';
-  }
-}
-}
+function renderPerformers(){const box=$('performers');box.innerHTML='';performers.forEach((p,i)=>{const el=document.createElement('div');el.className='performer';el.innerHTML='<div class="performerTop"><b>출연자 '+(i+1)+'</b><button class="remove" type="button">삭제</button></div><input type="text" placeholder="가수 이명로" value="'+escapeHtml(p.text)+'"><input type="file" accept="image/*"><label class="mainpick"><input type="radio" name="mainArtist" '+(p.main?'checked':'')+'> 메인 표시</label><img class="thumb" '+(p.src?'src="'+p.src+'" style="display:block"':'')+'>';const text=el.querySelector('input[type=text]');text.oninput=e=>{p.text=e.target.value;renderPoster()};el.querySelector('.remove').onclick=()=>removePerformer(p.id);el.querySelector('input[type=file]').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{p.src=r.result;renderPerformers();renderPoster()};r.readAsDataURL(f)};el.querySelector('input[type=radio]').onchange=()=>{performers.forEach(q=>q.main=false);p.main=true;renderPerformers();renderPoster()};box.appendChild(el)});renderPoster()}
+function renderPoster(){const g=$('artistGrid');g.innerHTML='';performers.forEach(p=>{const c=document.createElement('div');c.className='artistCard';c.innerHTML=(p.src?'<img src="'+p.src+'">':'<div style="height:50px;background:#151515"></div>')+'<div class="name">'+escapeHtml(p.text||'출연가수')+'</div>';g.appendChild(c)});const main=performers.find(p=>p.main);const ma=$('mainArtist');if(ma){if(main){const img=$('mainImg');const label=$('mainLabel');label.textContent=main.text||'메인가수';if(main.src){img.src=main.src;img.style.display='block';ma.style.display='block'}else{img.removeAttribute('src');img.style.display='none';ma.style.display='block'}}else{ma.style.display='none'}}}
 $('addBtn').onclick=addPerformer;$('applyBtn').onclick=apply;
 ['headline','title','highlight','venue','date','bottomMsg1','bottomMsg2'].forEach(id=>$(id).addEventListener('input',updateText));
 $('time').addEventListener('input',e=>{const v=e.target.value;const digits=v.replace(/\D/g,'');if(digits.length===8){e.target.value=digits.slice(0,2)+':'+digits.slice(2,4)+'~'+digits.slice(4,6)+':'+digits.slice(6,8)}else if(digits.length>8){const d=digits.slice(0,8);e.target.value=d.slice(0,2)+':'+d.slice(2,4)+'~'+d.slice(4,6)+':'+d.slice(6,8)}updateText()});
 $('time').addEventListener('blur',e=>{e.target.value=normalizeTime(e.target.value);updateText()});$('time').addEventListener('change',e=>{e.target.value=normalizeTime(e.target.value);updateText()});
 $('host').onchange=()=>toggleCustom('host','hostCustom');$('organizer').onchange=()=>toggleCustom('organizer','organizerCustom');$('hostCustom').oninput=updateText;$('organizerCustom').oninput=updateText;
-$('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').value='많은 관심과 참여 부탁드립니다!';
-renderCats();render();updateText();addPerformer();
-</script>
-\n<script>
-(function(){
-  function bindPosterControls(){
-    const preview=document.getElementById('previewBtn');
-    const download=document.getElementById('downloadBtn');
-    const apply=document.getElementById('applyBtn');
-    if(preview){
-      preview.onclick=function(){
-        if(apply) apply.click();
-        const poster=document.querySelector('.poster');
-        if(poster) poster.scrollIntoView({behavior:'smooth',block:'center'});
-      };
-    }
-    if(download){
-      download.onclick=async function(){
-        const poster=document.querySelector('.poster');
-        if(!poster) return;
-        const old=download.textContent;
-        download.textContent='⏳ 다운로드 준비 중...';
-        download.disabled=true;
-        try{
-          if(typeof window.html2canvas!=='function') throw new Error('html2canvas unavailable');
-          const canvas=await window.html2canvas(poster,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});
-          const link=document.createElement('a');
-          link.download='행사포스터.png';
-          link.href=canvas.toDataURL('image/png');
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-        }catch(err){
-          console.error(err);
-          alert('포스터 PNG 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-        }finally{
-          download.textContent=old;
-          download.disabled=false;
-        }
-      };
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindPosterControls);
-  else bindPosterControls();
-})();
+$('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').value='많은 관심과 참여 부탁드립니다!';renderCats();render();updateText();addPerformer();
 </script>
 <script>
-(function(){
-  function bindPosterControls(){
-    const preview=document.getElementById('previewBtn');
-    const download=document.getElementById('downloadBtn');
-    const apply=document.getElementById('applyBtn');
-    if(preview){
-      preview.onclick=function(){
-        if(apply) apply.click();
-        const poster=document.querySelector('.poster');
-        if(poster) poster.scrollIntoView({behavior:'smooth',block:'center'});
-      };
-    }
-    if(download){
-      download.onclick=async function(){
-        const poster=document.querySelector('.poster');
-        if(!poster) return;
-        const old=download.textContent;
-        download.textContent='⏳ 다운로드 준비 중...';
-        download.disabled=true;
-        try{
-          if(typeof window.html2canvas!=='function') throw new Error('html2canvas unavailable');
-          const canvas=await window.html2canvas(poster,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});
-          const link=document.createElement('a');
-          link.download='행사포스터.png';
-          link.href=canvas.toDataURL('image/png');
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-        }catch(err){
-          console.error(err);
-          alert('포스터 PNG 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-        }finally{
-          download.textContent=old;
-          download.disabled=false;
-        }
-      };
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindPosterControls);
-  else bindPosterControls();
-})();
+(function(){function bindPosterControls(){const preview=document.getElementById('previewBtn');const download=document.getElementById('downloadBtn');const apply=document.getElementById('applyBtn');if(preview){preview.onclick=function(){if(apply)apply.click();const poster=document.querySelector('.poster');if(poster)poster.scrollIntoView({behavior:'smooth',block:'center'})}}if(download){download.onclick=async function(){const poster=document.querySelector('.poster');if(!poster)return;const old=download.textContent;download.textContent='⏳ 다운로드 준비 중...';download.disabled=true;try{if(typeof window.html2canvas!=='function')throw new Error('html2canvas unavailable');const canvas=await window.html2canvas(poster,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#08152e',logging:false});const link=document.createElement('a');link.download='행사포스터.png';link.href=canvas.toDataURL('image/png');document.body.appendChild(link);link.click();link.remove()}catch(err){console.error(err);alert('포스터 PNG 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.')}finally{download.textContent=old;download.disabled=false}}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindPosterControls);else bindPosterControls()})();
 </script>
-<style id="poster-category-photo-fix">
-.artistCard img{width:100%!important;height:82px!important;object-fit:cover!important;object-position:center center!important;max-width:none!important;max-height:none!important;padding:0!important;transform:scale(1.65)!important;transform-origin:center center!important}
-</style>
-<script id="poster-category-filter-fix">
-(function(){
-  function install(){
-    const cats=document.getElementById('cats');
-    const grid=document.getElementById('grid');
-    if(!cats||!grid)return false;
-    if(cats.dataset.categoryFixed==='1')return true;
-    const cards=Array.from(grid.querySelectorAll('.card'));
-    if(!cards.length)return false;
-    cats.dataset.categoryFixed='1';
-    const labels=[
-      ['all','전체'],['night','🌙 야시장'],['concert','🎤 공연'],['festival','🎉 축제'],
-      ['sports','🏃 체육대회'],['golf','⛳ 골프대회'],['specialty','🌶️ 지역특산물'],
-      ['market','🛍️ 시장행사'],['general','✨ 일반행사']
-    ];
-    cats.innerHTML='';
-    function text(card){return (card.textContent||'').replace(/\\s+/g,' ')}
-    function match(card,key){
-      if(key==='all')return true;
-      const t=text(card);
-      if(key==='night')return /야시장|야간/.test(t);
-      if(key==='concert')return /공연|무대|콘서트|라이브|마이크/.test(t);
-      if(key==='festival')return /축제|불꽃|빛축제|기념행사/.test(t);
-      if(key==='sports')return /체육|운동|스포츠|경기장|달리기|시상식|선수|응원/.test(t);
-      if(key==='golf')return /골프/.test(t);
-      if(key==='specialty')return /특산|농산|장터|먹거리|농촌|수확/.test(t);
-      if(key==='market')return /시장|상점|쇼핑/.test(t);
-      if(key==='general')return /고급행사|세련된 행사|문화행사|시민행사|일반/.test(t);
-      return true;
-    }
-    function select(key,btn){
-      cats.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));
-      btn.classList.add('active');
-      cards.forEach(c=>c.style.display=match(c,key)?'':'none');
-    }
-    labels.forEach((item,i)=>{
-      const b=document.createElement('button');
-      b.type='button'; b.className='cat'+(i===0?' active':''); b.textContent=item[1];
-      b.addEventListener('click',function(){select(item[0],b)});
-      cats.appendChild(b);
-    });
-    cards.forEach(c=>c.style.display='');
-    return true;
-  }
-  function start(){
-    if(install())return;
-    const grid=document.getElementById('grid');
-    if(grid){
-      const ob=new MutationObserver(function(){if(install())ob.disconnect()});
-      ob.observe(grid,{childList:true,subtree:true});
-      setTimeout(function(){ob.disconnect()},5000);
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-})();
-</script>
-\n<!-- poster-fix-v2 -->\n<script>\n(function(){\n  function setupCategoryFilter(){\n    const cats=document.getElementById('cats');\n    const grid=document.getElementById('grid');\n    if(!cats||!grid)return;\n    const labels=[['all','전체'],['night','🌙 야시장'],['concert','🎤 공연'],['festival','🎉 축제'],['sports','🏃 체육대회'],['golf','⛳ 골프대회'],['specialty','🌶️ 지역특산물'],['market','🛍️ 시장행사'],['general','✨ 일반행사']];\n    cats.innerHTML='';\n    const cards=Array.from(grid.querySelectorAll('.card'));\n    const textOf=c=>(c.textContent||'').replace(/\\s+/g,' ');\n    function match(card,key){\n      if(key==='all')return true;\n      const t=textOf(card);\n      if(key==='night')return /야시장|야간/.test(t);\n      if(key==='concert')return /공연|무대|콘서트|라이브|마이크/.test(t);\n      if(key==='festival')return /축제|불꽃|빛축제|기념행사/.test(t);\n      if(key==='sports')return /체육|운동|스포츠|경기장|달리기|시상식/.test(t);\n      if(key==='golf')return /골프/.test(t);\n      if(key==='specialty')return /특산|농산|장터|먹거리|농촌|수확/.test(t);\n      if(key==='market')return /시장|상점|쇼핑/.test(t);\n      if(key==='general')return /고급행사|세련된 행사|문화행사|시민행사|일반/.test(t);\n      return true;\n    }\n    function select(key,btn){\n      cats.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));\n      btn.classList.add('active');\n      cards.forEach(c=>c.style.display=match(c,key)?'':'none');\n    }\n    labels.forEach((item,i)=>{\n      const b=document.createElement('button');\n      b.type='button'; b.className='cat'+(i===0?' active':''); b.textContent=item[1];\n      b.addEventListener('click',()=>select(item[0],b));\n      cats.appendChild(b);\n    });\n    cards.forEach(c=>{c.style.display=''});\n  }\n  function fixArtistImages(){\n    document.querySelectorAll('.artistCard img').forEach(img=>{\n      img.style.objectFit='contain';\n      img.style.objectPosition='center';\n      img.style.maxWidth='100%';\n      img.style.maxHeight='82px';\n    });\n  }\n  setTimeout(function(){setupCategoryFilter();fixArtistImages();},150);\n  setTimeout(function(){setupCategoryFilter();fixArtistImages();},700);\n})();\n</script>\n
-\n<!-- FINAL-PERFORMER-8COL-FIX -->
 <style>
-.artistArea{left:18px;right:18px;top:510px;bottom:190px;overflow:hidden}
-.artistGrid{left:0;right:0;top:0;bottom:0;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:82px;gap:4px;align-content:start}
-.artistCard{height:82px;background:rgba(0,0,0,.8);border:2px solid #ffd21c;min-width:0;text-align:center;overflow:hidden;display:flex;flex-direction:column}
-.artistCard img{width:100%!important;height:61px!important;min-height:61px!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center center!important;background:#111;display:block;padding:0!important;margin:0!important;transform:none!important}
-.artistCard .name{height:17px;line-height:17px;padding:0 2px;font-size:9px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 0 17px}
-.mainArtist{display:block!important}
+.artistCard img{object-fit:cover!important;object-position:center center!important;transform:none!important}
 </style>
-
 </body>
 </html>
