@@ -1,0 +1,92 @@
+name: Add poster formats 2 and 3
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  add-formats:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add formats without changing existing functions
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- POSTER-FORMATS-2-3-FINAL -->'
+          if marker in s:
+              raise SystemExit(0)
+
+          controls='''
+<div class="section" id="posterFormatSection">
+<h3>④ 포스터 형식 선택</h3>
+<div class="posterFormatBtns">
+<button type="button" class="posterFormatBtn active" data-format="1">① 현재형</button>
+<button type="button" class="posterFormatBtn" data-format="2">② 행사형</button>
+<button type="button" class="posterFormatBtn" data-format="3">③ 축제형</button>
+</div>
+<p class="hint">행사정보·배경·메인가수·출연자 사진은 그대로 사용하고 포스터 구성만 변경합니다.</p>
+</div>
+'''
+          s=s.replace('<div class="section"><h3>③ 출연자 관리', controls+'<div class="section"><h3>③ 출연자 관리', 1)
+
+          css='''
+<style id="posterFormats23CSS">
+.posterFormatBtns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}.posterFormatBtn{padding:11px 4px;border:1px solid #40506a;border-radius:7px;background:#172235;color:#dce5f2;font-weight:900;font-size:11px;cursor:pointer}.posterFormatBtn.active{background:#ffd21c;color:#111;border-color:#ffd21c}
+.posterFormatCanvas{position:absolute;inset:0;z-index:30;display:none;overflow:hidden}.poster.format2 .posterFormatCanvas.format2,.poster.format3 .posterFormatCanvas.format3{display:block}
+.poster.format2>.txt,.poster.format3>.txt,.poster.format2>.performersTitle,.poster.format3>.performersTitle,.poster.format2>.artistArea,.poster.format3>.artistArea,.poster.format2>.mainArtist,.poster.format3>.mainArtist,.poster.format2>.info,.poster.format3>.info,.poster.format2>.infoInvite,.poster.format3>.infoInvite,.poster.format2>.posterFooter,.poster.format3>.posterFooter,.poster.format2>.mark,.poster.format3>.mark{display:none!important}
+.pf{position:absolute;inset:0;color:#fff;text-align:center;font-family:Arial,"Noto Sans KR",sans-serif;background:linear-gradient(180deg,rgba(2,8,24,.12),rgba(2,8,24,.75));text-shadow:2px 3px 5px #000}.pf2{padding:22px 22px}.pf2 .top{font-size:13px;color:#ffd76a;font-weight:900}.pf2 .title{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:58px;line-height:1.02;font-weight:900;margin-top:10px}.pf2 .highlight{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:51px;color:#ffd21c;font-weight:900;margin-top:2px}.pf2 .venue{font-size:15px;font-weight:900;margin-top:6px}.pf2 .date{font-size:25px;color:#ffd21c;font-weight:900;margin-top:15px}.pf2 .boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.pf2 .box{background:rgba(3,14,34,.82);border:1px solid #d8b34c;border-radius:9px;padding:9px;text-align:left;min-height:105px}.pf2 .box h4{text-align:center;color:#ffd21c;margin:0 0 7px;font-size:14px}.pf2 .box p{font-size:9px;line-height:1.45;margin:3px 0}.pf2 .schedule{margin-top:10px;padding:7px;border-top:1px solid #d8b34c;border-bottom:1px solid #d8b34c;font-size:10px}.pf2 .people{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:9px}.pfPerson{background:rgba(0,0,0,.76);border:1px solid #ffd21c;border-radius:5px;overflow:hidden}.pfPerson img{width:100%;height:56px;object-fit:cover;display:block}.pfPerson .noimg{height:56px;background:#111}.pfPerson b{display:block;font-size:8px;padding:4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pf2 .footer{position:absolute;left:18px;right:18px;bottom:12px;border-top:1px solid #d8b34c;padding-top:7px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf3{padding:18px 18px}.pf3 .year{font-size:22px;font-weight:900}.pf3 .title{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:68px;line-height:.94;font-weight:900;color:#fff;text-shadow:4px 5px 0 #a31313,6px 7px 7px #000;margin-top:5px}.pf3 .highlight{font-family:'Nanum Brush Script','Gugi','Noto Serif KR',serif;font-size:61px;line-height:1;color:#ffd21c;font-weight:900;margin-top:4px}.pf3 .ribbon{margin:12px auto 0;max-width:470px;background:#c51d1d;border:2px solid #ffb51c;border-radius:3px;padding:9px 10px;font-size:13px;font-weight:900}.pf3 .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:11px auto 0;max-width:470px}.pf3 .meta div{background:rgba(0,0,0,.72);border:1px solid #ffd21c;border-radius:7px;padding:8px;font-size:10px}.pf3 .meta b{color:#ffd21c;margin-right:4px}.pf3 .people{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:9px}.pf3 .people .pfPerson img,.pf3 .people .pfPerson .noimg{height:58px}.pf3 .people .pfPerson b{font-size:7px;padding:3px 1px}.pf3 .cards{position:absolute;left:18px;right:18px;bottom:60px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.pf3 .card{background:rgba(255,255,255,.94);color:#111;text-shadow:none;border:0;border-radius:9px;padding:7px 5px;min-height:86px}.pf3 .card h4{margin:0 0 5px;font-size:11px}.pf3 .card p{margin:3px 0;font-size:8px;line-height:1.3}.pf3 .bottom{position:absolute;left:18px;right:18px;bottom:14px;background:#ffd21c;color:#142039;text-shadow:none;border-radius:18px;padding:7px;font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+'''
+          s=s.replace('</style>', css+'</style>', 1)
+
+          html='''
+<div class="posterFormatCanvas format2"><div class="pf pf2">
+<div class="top" data-pf="headline"></div><div class="title" data-pf="title"></div><div class="highlight" data-pf="highlight"></div><div class="venue" data-pf="venue"></div><div class="date" data-pf="date"></div>
+<div class="boxes"><div class="box"><h4>행사 프로그램</h4><p data-pf="msg1"></p><p data-pf="msg2"></p></div><div class="box"><h4>함께하는 무대</h4><p data-pf="host"></p><p data-pf="org"></p></div></div>
+<div class="schedule" data-pf="schedule"></div><div class="people" data-pf-people="2"></div><div class="footer" data-pf="footer"></div>
+</div></div>
+<div class="posterFormatCanvas format3"><div class="pf pf3">
+<div class="year" data-pf="year"></div><div class="title" data-pf="title"></div><div class="highlight" data-pf="highlight"></div><div class="ribbon" data-pf="ribbon"></div>
+<div class="meta"><div><b>📅</b><span data-pf="date"></span></div><div><b>📍</b><span data-pf="venue"></span></div></div>
+<div class="people" data-pf-people="3"></div>
+<div class="cards"><div class="card"><h4>맛있는 먹거리</h4><p>지역 먹거리 · 체험부스</p><p>시장 특색상품 · 즐길거리</p></div><div class="card"><h4>신나는 공연</h4><p>주민공연 · 초청공연</p><p>버스킹 · 특별무대</p></div><div class="card"><h4>즐길거리 가득</h4><p>플리마켓 · 체험행사</p><p>가족 참여 프로그램</p></div><div class="card"><h4>특별 이벤트</h4><p>상품권 · 경품추첨</p><p>현장 참여 이벤트</p></div></div>
+<div class="bottom" data-pf="footer"></div></div></div>
+'''
+          idx=s.rfind('</div></main></div>')
+          if idx<0:
+              raise SystemExit('poster closing marker not found')
+          s=s[:idx]+html+s[idx:]
+
+          js='''
+<script id="posterFormats23JS">
+(function(){
+  const q=(x,r=document)=>r.querySelector(x), qa=(x,r=document)=>Array.from(r.querySelectorAll(x));
+  function v(id){const e=document.getElementById(id);return e?e.value:''}
+  function dateText(){const d=v('date'),t=v('time');if(!d)return t;const p=d.split('-');return p[0]+'. '+Number(p[1])+'. '+Number(p[2])+'.'+(t?' · '+t:'')}
+  function performers(){return qa('#artistGrid .artistCard').map(c=>({name:q('.name',c)?.textContent||'출연가수',src:q('img',c)?.src||''}))}
+  function fill(){
+    const title=v('title')||'행사 제목',hi=v('highlight'),head=v('headline'),venue=v('venue'),host=v('host')==='직접 입력'?v('hostCustom'):v('host'),org=v('organizer')==='직접 입력'?v('organizerCustom'):v('organizer'),m1=v('bottomMsg1'),m2=v('bottomMsg2');
+    qa('.posterFormatCanvas').forEach(c=>qa('[data-pf]',c).forEach(e=>{const k=e.dataset.pf;if(k==='title')e.textContent=title;else if(k==='highlight')e.textContent=hi;else if(k==='headline')e.textContent=head;else if(k==='venue')e.textContent=venue;else if(k==='date')e.textContent=dateText();else if(k==='year')e.textContent=(v('date')||'').slice(0,4)+'년';else if(k==='ribbon')e.textContent=m1||'먹거리 · 볼거리 · 즐길거리 가득한 축제!';else if(k==='msg1')e.textContent=m1||'먹거리 · 볼거리 · 즐길거리 가득한 행사';else if(k==='msg2')e.textContent=m2||'지역 예술공연 · 시민 참여 프로그램';else if(k==='host')e.textContent='주최 '+(host||'');else if(k==='org')e.textContent='주관 '+(org||'');else if(k==='schedule')e.textContent=(v('date')||'')+' · '+(v('time')||'')+' · '+venue;else if(k==='footer')e.textContent=(m2||'많은 관심과 참여 부탁드립니다!')+'　 '+(host||'')+'　 '+(org||'')}));
+    qa('[data-pf-people]').forEach(box=>{const n=box.dataset.pfPeople==='3'?14:6;box.innerHTML=performers().slice(0,n).map(p=>'<div class="pfPerson">'+(p.src?'<img src="'+p.src+'">':'<div class="noimg"></div>')+'<b>'+String(p.name).replace(/[&<>]/g,'')+'</b></div>').join('')});
+  }
+  function setFormat(n){const p=q('.poster');if(!p)return;p.classList.remove('format2','format3');if(n==='2')p.classList.add('format2');if(n==='3')p.classList.add('format3');qa('.posterFormatBtn').forEach(b=>b.classList.toggle('active',b.dataset.format===n));try{localStorage.setItem('posterFormat',n)}catch(e){}fill()}
+  function init(){qa('.posterFormatBtn').forEach(b=>b.addEventListener('click',()=>setFormat(b.dataset.format)));document.addEventListener('input',e=>{if(e.target.closest('.side'))setTimeout(fill,40)});document.addEventListener('change',e=>{if(e.target.closest('.side'))setTimeout(fill,60)});const saved=localStorage.getItem('posterFormat')||'1';setFormat(saved==='2'||saved==='3'?saved:'1')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+'''
+          s=s.replace('</body>', marker+js+'</body>', 1)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m '② 행사형 ③ 축제형 포스터 형식 추가' || exit 0
+          git push
