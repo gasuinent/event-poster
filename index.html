@@ -202,5 +202,26 @@ $('bottomMsg1').value='☆ 아랫장야시장에서 만나요!';$('bottomMsg2').
   setTimeout(removeMainDuplicate,1000);
 })();
 </script>
+
+<!-- MAIN-ARTIST-DOM-FILTER -->
+<script>
+(function(){
+  function clean(){
+    var main=document.getElementById('mainImg');
+    var grid=document.getElementById('artistGrid');
+    if(!main||!grid||!main.src)return;
+    var src=main.src;
+    grid.querySelectorAll('.artistCard').forEach(function(card){
+      var img=card.querySelector('img');
+      if(img && img.src===src) card.remove();
+    });
+  }
+  var grid=document.getElementById('artistGrid');
+  if(grid)new MutationObserver(clean).observe(grid,{childList:true,subtree:true});
+  var main=document.getElementById('mainImg');
+  if(main)new MutationObserver(clean).observe(main,{attributes:true,attributeFilter:['src']});
+  setTimeout(clean,100);setTimeout(clean,500);setTimeout(clean,1500);
+})();
+</script>
 </body>
 </html>
