@@ -1,0 +1,40 @@
+name: Fix Background Duplicates
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.event.head_commit.message != 'Fix duplicated background designs'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix duplicate background URLs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin_v5.html')
+          s=p.read_text(encoding='utf-8')
+          # 전구 ③은 전구/무대 계열과 겹치지 않는 콘서트 조명 이미지로 변경
+          old3='https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85'
+          new3='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=900&q=85'
+          s=s.replace("['전구 ③','"+old3+"']", "['전구 ③','"+new3+"']")
+          # 밤하늘 ①도 전구 ③과 겹치지 않도록 도시 야경으로 변경
+          oldn='https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85'
+          newn='https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=85'
+          s=s.replace("['밤하늘 ①','"+oldn+"']", "['밤하늘 ①','"+newn+"']")
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit fixed file
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin_v5.html
+          git commit -m 'Fix duplicated background designs' || exit 0
+          git push
+      - name: Remove temporary workflow
+        run: |
+          git rm .github/workflows/fix-bg-duplicates.yml
+          git commit -m 'Remove temporary background fix workflow'
+          git push
