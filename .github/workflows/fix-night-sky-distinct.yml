@@ -4,37 +4,49 @@ on:
     branches: [main]
 permissions:
   contents: write
+concurrency:
+  group: night-sky-fix
+  cancel-in-progress: true
 jobs:
   fix:
-    if: github.event.head_commit.message != 'Fix distinct night sky designs'
+    if: github.event.head_commit.message != 'FINAL FIX: Night Sky ③ distinct'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Make night sky presets distinct
+        with:
+          fetch-depth: 0
+      - name: Fix only night sky ③
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('standalone/poster_format23_admin_v5.html')
           s=p.read_text(encoding='utf-8')
-          a='https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=85'
-          b='https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85'
-          # Only replace the second occurrence: night sky ③ currently duplicates ②.
-          first=s.find(a)
-          second=s.find(a, first+1)
-          if second == -1:
-              raise SystemExit('duplicate night-sky URL not found')
-          s=s[:second]+b+s[second+len(a):]
+          old='https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=85'
+          new='https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85'
+          # In the current file night sky ② and ③ are consecutive entries.
+          marker="night:[['밤하늘 ①'"
+          start=s.find(marker)
+          if start < 0:
+              raise SystemExit('night preset block not found')
+          end=s.find("']],festival:", start)
+          if end < 0:
+              raise SystemExit('night preset block end not found')
+          block=s[start:end]
+          pos=block.find(old)
+          if pos < 0:
+              raise SystemExit('night sky ② URL not found')
+          pos2=block.find(old, pos+len(old))
+          if pos2 < 0:
+              raise SystemExit('night sky ③ duplicate URL not found')
+          block=block[:pos2]+new+block[pos2+len(old):]
+          s=s[:start]+block+s[end:]
           p.write_text(s,encoding='utf-8')
+          print('Night sky ③ replaced successfully')
           PY
-      - name: Commit
+      - name: Commit and push
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add standalone/poster_format23_admin_v5.html
-          git commit -m 'Fix distinct night sky designs'
-          git push
-      - name: Remove helper
-        run: |
-          git rm .github/workflows/fix-night-sky-distinct.yml
-          git commit -m 'Remove temporary night sky workflow'
-          git push
+          git commit -m 'FINAL FIX: Night Sky ③ distinct'
+          git push origin main
