@@ -1,0 +1,37 @@
+name: Fix reference ribbon
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '중앙 리본 시안 적용 완료') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace ribbon CSS
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin_v5.html')
+          s=p.read_text(encoding='utf-8')
+          old=".ribbon{position:relative;display:block;width:84%;margin:15px auto 14px;background:#c71919;border:2px solid #ffd21c;padding:11px 30px;font-size:14px;font-weight:900;line-height:1.25;z-index:1;box-shadow:0 4px 8px rgba(0,0,0,.45);clip-path:polygon(5% 0,95% 0,100% 50%,95% 100%,5% 100%,0 50%)}.ribbon:before,.ribbon:after{content:\"\";position:absolute;top:2px;width:44px;height:calc(100% - 4px);background:#a91414;z-index:-1}.ribbon:before{left:-2px;clip-path:polygon(0 0,100% 0,72% 50%,100% 100%,0 100%)}.ribbon:after{right:-2px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,28% 50%)}"
+          new=".ribbon{position:relative;display:block;width:72%;margin:15px auto 14px;background:#c71919;border:2px solid #ffd21c;padding:11px 22px;font-size:14px;font-weight:900;line-height:1.25;z-index:1;box-shadow:0 4px 8px rgba(0,0,0,.45);clip-path:none}.ribbon:before,.ribbon:after{content:\"\";position:absolute;top:-2px;width:58px;height:calc(100% + 4px);background:#a91414;border:2px solid #ffd21c;z-index:-1}.ribbon:before{left:-48px;clip-path:polygon(100% 0,0 0,22% 50%,0 100%,100% 100%,78% 50%)}.ribbon:after{right:-48px;clip-path:polygon(0 0,100% 0,78% 50%,100% 100%,0 100%,22% 50%)}"
+          if old not in s:
+              raise SystemExit('기존 ribbon CSS를 찾지 못했습니다.')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin_v5.html
+          git commit -m '중앙 리본 시안 적용 완료'
+          git push
+      - name: Remove helper workflow
+        run: |
+          git rm .github/workflows/fix-ribbon-reference.yml
+          git commit -m '리본 수정 보조 작업 정리'
+          git push
