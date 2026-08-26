@@ -1,0 +1,40 @@
+name: Fix Night Sky Distinct
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.event.head_commit.message != 'Fix distinct night sky designs'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make night sky presets distinct
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin_v5.html')
+          s=p.read_text(encoding='utf-8')
+          a='https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=85'
+          b='https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85'
+          # Only replace the second occurrence: night sky ③ currently duplicates ②.
+          first=s.find(a)
+          second=s.find(a, first+1)
+          if second == -1:
+              raise SystemExit('duplicate night-sky URL not found')
+          s=s[:second]+b+s[second+len(a):]
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin_v5.html
+          git commit -m 'Fix distinct night sky designs'
+          git push
+      - name: Remove helper
+        run: |
+          git rm .github/workflows/fix-night-sky-distinct.yml
+          git commit -m 'Remove temporary night sky workflow'
+          git push
