@@ -1,0 +1,36 @@
+name: Fix Night Sky 2
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.event.head_commit.message != 'Fix Night Sky 2 image URL'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace broken image URL
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin_v5.html')
+          s=p.read_text(encoding='utf-8')
+          old='https://images.unsplash.com/photo-1534791547706-6f5a9c7b6c4b?auto=format&fit=crop&w=900&q=85'
+          new='https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=85'
+          if old in s:
+              p.write_text(s.replace(old,new),encoding='utf-8')
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin_v5.html
+          git diff --cached --quiet || git commit -m 'Fix Night Sky 2 image URL'
+          git push
+      - name: Remove temporary workflow
+        run: |
+          rm -f .github/workflows/fix-night-sky-2.yml
+          git add .github/workflows/fix-night-sky-2.yml
+          git commit -m 'Remove temporary night sky fix workflow'
+          git push
