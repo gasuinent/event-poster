@@ -1,0 +1,37 @@
+name: Apply Night Sky Fix
+on:
+  pull_request:
+    types: [opened, synchronize]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Replace night sky ③ only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('standalone/poster_format23_admin_v5.html')
+          s=p.read_text(encoding='utf-8')
+          a='https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=900&q=85'
+          b='https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85'
+          first=s.find(a)
+          second=s.find(a, first+1) if first >= 0 else -1
+          if second < 0:
+              raise SystemExit('밤하늘 ②·③ 중복 URL을 찾지 못했습니다.')
+          s=s[:second]+b+s[second+len(a):]
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit fix to PR branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin_v5.html
+          git commit -m '밤하늘 ③ 배경을 ②와 다른 디자인으로 수정' || exit 0
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
