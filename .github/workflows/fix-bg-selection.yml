@@ -1,0 +1,39 @@
+name: Fix background selection duplicates
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix duplicate background images
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('standalone/poster_format23_admin_v5.html')
+          s = p.read_text(encoding='utf-8')
+          old = 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85'
+          s = s.replace("['전구 ③','" + old + "']", "['전구 ③','https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=900&q=85']")
+          s = s.replace("['밤하늘 ①','" + old + "']", "['밤하늘 ①','https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=900&q=85']")
+          old2 = "['축제 ①','https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=85']"
+          new2 = "['축제 ①','https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=900&q=85']"
+          s = s.replace(old2, new2)
+          p.write_text(s, encoding='utf-8')
+      - name: Commit fix
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add standalone/poster_format23_admin_v5.html
+          git commit -m '배경 디자인 중복 이미지 수정' || exit 0
+          git push
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          git rm .github/workflows/fix-bg-selection.yml
+          git commit -m 'Remove temporary background fix workflow'
+          git push
