@@ -2,9 +2,6 @@ name: Event info one line
 on:
   push:
     branches: [main]
-    paths:
-      - 'event-info-one-line.trigger'
-      - '.github/workflows/event-info-one-line.yml'
 permissions:
   contents: write
 jobs:
@@ -12,21 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Make event information one line only
+      - name: Make place host organizer one line only
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
           old='.infoValue{flex:1;color:#fff;font-size:13px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25}'
-          new='.infoValue{flex:1;color:#fff;font-size:13px;white-space:nowrap;overflow:visible;text-overflow:clip;line-height:1.25}'
-          if old not in s:
-              raise SystemExit('target not found')
-          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          new='.infoValue{flex:1;color:#fff;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}'
+          if old in s:
+              p.write_text(s.replace(old,new,1),encoding='utf-8')
+          else:
+              print('Already fixed or target not present')
           PY
-          rm -f event-info-one-line.trigger
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html event-info-one-line.trigger
-          git commit -m '행사정보 글자 한줄 표시'
-          git push
+          git add index.html
+          git diff --cached --quiet || (git commit -m '장소 주최 주관 한줄 표시' && git push)
